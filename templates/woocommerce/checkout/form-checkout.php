@@ -7,6 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+
 // Check if there are checkout fields to render
 if ( empty( $checkout->get_checkout_fields() ) ) {
 	echo esc_html__( 'No checkout fields are available.', 'mcod-minimalist-checkout' );

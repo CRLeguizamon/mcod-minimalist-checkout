@@ -1,9 +1,9 @@
-=== Minimalist Checkout for WooCommerce ===
+=== MCOD Minimalist Checkout for WooCommerce ===
 Contributors: crleguizamon
 Donate link: https://www.paypal.com/paypalme/cristian18josue
 Tags: woocommerce, checkout, minimalist, shop, distraction-free
 Requires at least: 5.0
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv3
@@ -13,7 +13,7 @@ A minimalist, beautiful, and fast checkout for WooCommerce, inspired by shop.
 
 == Description ==
 
-Minimalist Checkout for WooCommerce replaces the standard and noisy WooCommerce checkout form with a premium two-column layout, highly optimized and inspired by the shop checkout flow.
+MCOD Minimalist Checkout for WooCommerce replaces the standard and noisy WooCommerce checkout form with a premium two-column layout, highly optimized and inspired by the shop checkout flow.
 
 * **Premium Design**: Clean interface with Inter typography, subtle shadows, and interactive shop-blue cards.
 * **Fully Isolated & Distraction-Free**: Removes main menus, promotional banners, and theme footers, keeping the user 100% focused on finalizing their purchase.

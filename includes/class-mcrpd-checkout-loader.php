@@ -277,6 +277,7 @@ class MCRPD_Checkout_Loader {
 			$package_name      = apply_filters(
 				'woocommerce_shipping_package_name',
 				( $i + 1 > 1 )
+					// translators: %d represents the shipping package number.
 					? sprintf( _x( 'Shipping %d', 'shipping packages', 'mcod-minimalist-checkout' ), ( $i + 1 ) )
 					: _x( 'Shipping', 'shipping packages', 'mcod-minimalist-checkout' ),
 				$i,
@@ -587,7 +588,10 @@ class MCRPD_Checkout_Loader {
 			<div style="margin-bottom: 20px;">
 				<h4 style="margin: 0 0 8px 0; color: #f1f5f9; font-size: 14px;">💾 Saved Options (mcrpd_settings)</h4>
 				<div style="max-height: 200px; overflow-y: auto; background: #0f172a; padding: 10px; border-radius: 4px; border: 1px solid #1e293b; font-size: 11px;">
-					<pre style="margin: 0; color: #cbd5e1; white-space: pre-wrap;"><?php echo esc_html( print_r( get_option( 'mcrpd_settings', array() ), true ) ); ?></pre>
+					<pre style="margin: 0; color: #cbd5e1; white-space: pre-wrap;"><?php
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+					echo esc_html( print_r( get_option( 'mcrpd_settings', array() ), true ) );
+					?></pre>
 				</div>
 			</div>
 			

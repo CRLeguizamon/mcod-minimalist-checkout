@@ -100,6 +100,7 @@ class MCRPD_Checkout_Settings {
 	 * Enqueue admin scripts for color picker, media uploader, sortable, and field editor.
 	 */
 	public function enqueue_admin_assets( $hook ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$current_page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 		if ( 'mcrpd-checkout-settings' !== $current_page ) {
 			return;
@@ -256,7 +257,7 @@ class MCRPD_Checkout_Settings {
 				<!-- Tab 2: Checkout Field Editor -->
 				<div id="mcrpd-main-tab-fields" class="mcrpd-main-tab-content" style="display: none;">
 					<div class="mcrpd-field-editor-wrap">
-						<h2><?php esc_html_e( '📋 Checkout Fields', 'mcod-minimalist-checkout' ); ?></h2>
+						<h2><?php esc_html_e( 'Checkout Fields', 'mcod-minimalist-checkout' ); ?></h2>
 
 						<!-- Tab Navigation -->
 						<div class="mcrpd-field-tabs">
@@ -358,7 +359,7 @@ class MCRPD_Checkout_Settings {
 						<!-- Actions footer -->
 						<div class="mcrpd-field-editor-actions">
 							<button type="button" class="mcrpd-reset-fields-btn">
-								<?php esc_html_e( '🔄 Restore Default Values', 'mcod-minimalist-checkout' ); ?>
+								<?php esc_html_e( 'Restore Default Values', 'mcod-minimalist-checkout' ); ?>
 							</button>
 							<span class="mcrpd-editor-note">
 								<?php esc_html_e( 'Drag fields to reorder. Changes will apply after saving.', 'mcod-minimalist-checkout' ); ?>

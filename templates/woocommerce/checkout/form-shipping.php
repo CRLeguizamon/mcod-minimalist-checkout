@@ -12,6 +12,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 ?>
 <?php
 $settings                           = get_option( 'mcrpd_settings', array() );

@@ -6,6 +6,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 ?>
 
 <?php if ( ! wp_doing_ajax() ) : ?>
@@ -23,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						wc_get_template( 'checkout/payment-method.php', array( 'gateway' => $gateway ) );
 					}
 				} else {
-					echo '<li class="woocommerce-notice woocommerce-notice--info woocommerce-info mcrpd-no-gateways-notice">' . apply_filters( 'woocommerce_no_available_payment_methods_message', WC()->customer->get_billing_country() ? esc_html__( 'Sorry, it seems there are no available payment methods for your location. Please contact us if you need help.', 'mcod-minimalist-checkout' ) : esc_html__( 'Please fill in your delivery details to view available payment methods.', 'mcod-minimalist-checkout' ) ) . '</li>'; // @codingStandardsIgnoreLine
+					echo '<li class="woocommerce-notice woocommerce-notice--info woocommerce-info mcrpd-no-gateways-notice">' . apply_filters( 'woocommerce_no_available_payment_methods_message', WC()->customer->get_billing_country() ? esc_html__( 'Sorry, it seems there are no available payment methods for your location. Please contact us if you need help.', 'mcod-minimalist-checkout' ) : esc_html__( 'Please fill in your delivery details to view available payment methods.', 'mcod-minimalist-checkout' ) ) . '</li>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 				}
 				?>
 			</ul>
@@ -48,7 +50,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<!-- Premium Submit Button -->
 			<?php 
 			$order_button_text = apply_filters( 'woocommerce_order_button_text', __( 'Pay now', 'mcod-minimalist-checkout' ) );
-			echo apply_filters( 'woocommerce_order_button_html', '<button type="submit" class="button alt mcrpd-pay-now-button" name="woocommerce_checkout_place_order" id="place_order" value="' . esc_attr( $order_button_text ) . '" data-value="' . esc_attr( $order_button_text ) . '">' . esc_html( $order_button_text ) . '</button>' ); // @codingStandardsIgnoreLine 
+			echo apply_filters( 'woocommerce_order_button_html', '<button type="submit" class="button alt mcrpd-pay-now-button" name="woocommerce_checkout_place_order" id="place_order" value="' . esc_attr( $order_button_text ) . '" data-value="' . esc_attr( $order_button_text ) . '">' . esc_html( $order_button_text ) . '</button>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped 
 			?>
 
 			<?php do_action( 'woocommerce_review_order_after_submit' ); ?>

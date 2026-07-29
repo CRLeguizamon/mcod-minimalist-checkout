@@ -12,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+
 $all_billing_fields = $checkout->get_checkout_fields( 'billing' );
 $has_email          = isset( $all_billing_fields['billing_email'] );
 ?>

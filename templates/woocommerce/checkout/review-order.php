@@ -6,6 +6,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 ?>
 
 <div class="mcrpd-checkout-review-inner woocommerce-checkout-review-order-table">
@@ -74,7 +76,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 		
 		<!-- Subtotal -->
 		<div class="mcrpd-totals-row">
-			<span class="mcrpd-totals-label"><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></span>
+			<span class="mcrpd-totals-label"><?php esc_html_e( 'Subtotal', 'mcod-minimalist-checkout' ); ?></span>
 			<span class="mcrpd-totals-value"><?php wc_cart_totals_subtotal_html(); ?></span>
 		</div>
 
@@ -95,7 +97,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<!-- Shipping Cost (Simplified representation) -->
 		<div class="mcrpd-totals-row">
-			<span class="mcrpd-totals-label"><?php esc_html_e( 'Envío', 'woocommerce' ); ?></span>
+			<span class="mcrpd-totals-label"><?php esc_html_e( 'Shipping', 'mcod-minimalist-checkout' ); ?></span>
 			<span class="mcrpd-totals-value">
 				<?php
 				if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) {
@@ -151,7 +153,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<!-- Final Order Total -->
 		<div class="mcrpd-totals-row mcrpd-total-row">
-			<span class="mcrpd-total-label"><?php esc_html_e( 'Total', 'woocommerce' ); ?></span>
+			<span class="mcrpd-total-label"><?php esc_html_e( 'Total', 'mcod-minimalist-checkout' ); ?></span>
 			<span class="mcrpd-total-value">
 				<span class="mcrpd-currency-code"><?php echo esc_html( get_woocommerce_currency() ); ?></span>
 				<?php wc_cart_totals_order_total_html(); ?>
