@@ -14,12 +14,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 <?php
-$ship_to_different_checked = (bool) apply_filters( 'woocommerce_ship_to_different_address_checked', 'shipping' === get_option( 'woocommerce_ship_to_destination' ) ? 1 : 0 );
+$settings                           = get_option( 'mcrpd_settings', array() );
+$disable_different_shipping_address = ! empty( $settings['disable_different_shipping_address'] );
+$ship_to_different_checked          = $disable_different_shipping_address ? false : (bool) apply_filters( 'woocommerce_ship_to_different_address_checked', 'shipping' === get_option( 'woocommerce_ship_to_destination' ) ? 1 : 0 );
 ?>
 <div class="woocommerce-shipping-fields mcrpd-shipping-fields-wrap">
 
 	<!-- Choice of shipping address (Only if shipping is required) -->
-	<?php if ( true === WC()->cart->needs_shipping_address() ) : ?>
+	<?php if ( true === WC()->cart->needs_shipping_address() && ! $disable_different_shipping_address ) : ?>
 		<div class="mcrpd-checkout-section mcrpd-shipping-selector-section">
 			<h3 class="mcrpd-section-title"><?php esc_html_e( 'Shipping address', 'mcod-minimalist-checkout' ); ?></h3>
 			<div class="mcrpd-shipping-selector-group">

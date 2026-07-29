@@ -39,7 +39,7 @@
 		});
 
 		// Sync our custom radio state if the native checkbox is changed by other scripts
-		$(document.on('change', '#ship-to-different-address-checkbox', function () {
+		$(document).on('change', '#ship-to-different-address-checkbox', function () {
 			const isChecked = $(this).is(':checked');
 			const $radioYes = $('input[name="mcrpd_shipping_different"][value="yes"]');
 			const $radioNo = $('input[name="mcrpd_shipping_different"][value="no"]');
@@ -54,7 +54,7 @@
 				$shippingAddressWrap.slideUp(250);
 				perform_fields_sync();
 			}
-		}));
+		});
 
 		// Address fields to synchronize
 		const fieldsToSync = ['first_name', 'last_name', 'company', 'address_1', 'address_2', 'city', 'state', 'postcode', 'country'];
@@ -62,7 +62,7 @@
 		// Sync on change or blur of billing fields to shipping fields
 		fieldsToSync.forEach(function (field) {
 			$('#billing_' + field).on('change blur', function () {
-				if ($('input[name="mcrpd_shipping_different"]:checked').val() === 'no') {
+				if (!$shippingSelector.length || $('input[name="mcrpd_shipping_different"]:checked').val() === 'no') {
 					const val = $(this).val();
 					$('#shipping_' + field).val(val);
 
@@ -75,7 +75,7 @@
 		});
 
 		// Trigger initial sync if "no" is checked (Same as billing)
-		if ($('input[name="mcrpd_shipping_different"]:checked').val() === 'no') {
+		if (!$shippingSelector.length || $('input[name="mcrpd_shipping_different"]:checked').val() === 'no') {
 			perform_fields_sync();
 		}
 
