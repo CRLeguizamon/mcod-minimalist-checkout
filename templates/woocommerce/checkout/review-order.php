@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="mcrpd-checkout-review-inner woocommerce-checkout-review-order-table">
 
 	<!-- Cart Products List -->
+	<?php do_action( 'mcrpd_before_sidebar_product_list' ); ?>
 	<ul class="mcrpd-sidebar-product-list">
 		<?php
 		do_action( 'woocommerce_review_order_before_cart_contents' );
@@ -57,6 +58,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<hr class="mcrpd-sidebar-divider" />
 
 	<!-- Totals Rows -->
+	<?php do_action( 'mcrpd_before_sidebar_totals' ); ?>
 	<div class="mcrpd-sidebar-totals">
 		
 		<!-- Subtotal -->
@@ -148,5 +150,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php do_action( 'woocommerce_review_order_after_order_total' ); ?>
 
 	</div>
+	<?php do_action( 'mcrpd_after_sidebar_totals' ); ?>
 
 </div>

@@ -240,7 +240,7 @@ class MCRPD_Checkout_Settings {
 			<h2 class="nav-tab-wrapper mcrpd-main-tabs" style="margin-bottom: 20px;">
 				<a href="#mcrpd-tab-design" class="nav-tab nav-tab-active" data-tab="design"><?php esc_html_e( 'Design & Settings', 'mcod-minimalist-checkout' ); ?></a>
 				<a href="#mcrpd-tab-fields" class="nav-tab" data-tab="fields"><?php esc_html_e( 'Checkout Fields', 'mcod-minimalist-checkout' ); ?></a>
-				<a href="#mcrpd-tab-docs" class="nav-tab" data-tab="docs"><?php esc_html_e( 'Compatibilidad & Ayuda', 'mcod-minimalist-checkout' ); ?></a>
+				<a href="#mcrpd-tab-docs" class="nav-tab" data-tab="docs"><?php esc_html_e( 'Compatibility & Help', 'mcod-minimalist-checkout' ); ?></a>
 			</h2>
 
 			<form method="post" action="options.php">
@@ -368,77 +368,138 @@ class MCRPD_Checkout_Settings {
 				<!-- Tab 3: Documentation -->
 				<div id="mcrpd-main-tab-docs" class="mcrpd-main-tab-content" style="display: none;">
 					<div class="mcrpd-docs-wrap">
-						<h2><?php esc_html_e( '📖 Documentación y Compatibilidad', 'mcod-minimalist-checkout' ); ?></h2>
+						<h2><?php esc_html_e( 'Documentation & Compatibility', 'mcod-minimalist-checkout' ); ?></h2>
 						
 						<div class="mcrpd-docs-content">
 							<div class="mcrpd-docs-card">
-								<h3><?php esc_html_e( '¿Qué hace este plugin?', 'mcod-minimalist-checkout' ); ?></h3>
-								<p><?php esc_html_e( 'Minimalist Checkout transforma la página de pago estándar de WooCommerce en una experiencia simplificada, limpia y enfocada en la conversión. Oculta el encabezado y pie de página del tema (opcionalmente) para eliminar distracciones, y aplica un diseño de dos columnas moderno y responsivo.', 'mcod-minimalist-checkout' ); ?></p>
+								<h3><?php esc_html_e( 'What does this plugin do?', 'mcod-minimalist-checkout' ); ?></h3>
+								<p><?php esc_html_e( 'Minimalist Checkout transforms the standard WooCommerce checkout page into a streamlined, clean, and conversion-focused experience. It optionally hides the theme header and footer to eliminate distractions and applies a modern, responsive two-column layout.', 'mcod-minimalist-checkout' ); ?></p>
 							</div>
 
 							<div class="mcrpd-docs-card">
-								<h3><?php esc_html_e( 'Hacer compatibles campos de otros plugins', 'mcod-minimalist-checkout' ); ?></h3>
-								<p><?php esc_html_e( 'Si utilizas plugins externos (como editores de campos personalizados, plugins de RUT/Cédula, etc.) para añadir campos extra al checkout, es posible que no tomen el diseño automáticamente. Puedes solucionarlo añadiendo las siguientes clases CSS a esos campos desde la configuración de tu otro plugin:', 'mcod-minimalist-checkout' ); ?></p>
+								<h3><?php esc_html_e( 'Checkout Page Setup', 'mcod-minimalist-checkout' ); ?></h3>
+								<p><?php esc_html_e( 'For Minimalist Checkout to work properly, you must configure and edit the page selected as "Checkout" in WooCommerce:', 'mcod-minimalist-checkout' ); ?></p>
+								
+								<?php
+								$checkout_page_id = wc_get_page_id( 'checkout' );
+								if ( ! $checkout_page_id || $checkout_page_id <= 0 || ! get_post( $checkout_page_id ) ) :
+								?>
+									<div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
+										<p style="color: #b91c1c; margin: 0;">
+											<strong><?php esc_html_e( 'Warning:', 'mcod-minimalist-checkout' ); ?></strong>
+											<?php 
+											printf(
+												/* translators: %s: URL to WooCommerce advanced settings */
+												esc_html__( 'Your checkout page is not created or assigned. You must create it and assign it in %s.', 'mcod-minimalist-checkout' ),
+												'<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=advanced' ) ) . '" style="color: #991b1b; text-decoration: underline;">WooCommerce &gt; Settings &gt; Advanced</a>'
+											);
+											?>
+										</p>
+									</div>
+								<?php endif; ?>
+
+								<p><?php esc_html_e( 'Once assigned, edit the page and ensure these two requirements are met:', 'mcod-minimalist-checkout' ); ?></p>
+								<ul style="list-style-type: decimal; margin-left: 20px; margin-bottom: 15px;">
+									<li><strong><?php esc_html_e( 'Page Attributes:', 'mcod-minimalist-checkout' ); ?></strong> <?php esc_html_e( 'Select the "Minimalist Checkout" template.', 'mcod-minimalist-checkout' ); ?></li>
+									<li><strong><?php esc_html_e( 'Content:', 'mcod-minimalist-checkout' ); ?></strong> <?php esc_html_e( 'The page MUST contain the WooCommerce shortcode:', 'mcod-minimalist-checkout' ); ?> <code>[woocommerce_checkout]</code></li>
+								</ul>
+							</div>
+
+							<div class="mcrpd-docs-card">
+								<h3><?php esc_html_e( 'Diagnostics & Debugging', 'mcod-minimalist-checkout' ); ?></h3>
+								<p><?php esc_html_e( 'If you experience issues with fields not hiding, incorrect ordering, or 3rd-party plugin conflicts, you can add the following shortcode to your checkout page content (below [woocommerce_checkout]):', 'mcod-minimalist-checkout' ); ?></p>
+								<p><code>[mcrpd_debug]</code></p>
+								<p><?php esc_html_e( 'This will render a diagnostic panel (visible only to Administrators) directly on the checkout frontend. It displays active session status, WooCommerce region settings, active checkout plugins, field priority rules after filters, and a complete dump of the mcrpd_settings database option.', 'mcod-minimalist-checkout' ); ?></p>
+							</div>
+
+							<div class="mcrpd-docs-card">
+								<h3><?php esc_html_e( '3rd-Party Plugin Field Compatibility', 'mcod-minimalist-checkout' ); ?></h3>
+								<p><?php esc_html_e( 'If you use 3rd-party plugins (such as custom field editors, ID/Tax number plugins, etc.) to add extra fields to the checkout, they might not inherit the styling automatically. You can resolve this by adding the following CSS classes to those fields within your other plugin\'s settings:', 'mcod-minimalist-checkout' ); ?></p>
 								
 								<table class="mcrpd-docs-table">
 									<thead>
 										<tr>
-											<th><?php esc_html_e( 'Elemento', 'mcod-minimalist-checkout' ); ?></th>
-											<th><?php esc_html_e( 'Clase CSS a usar', 'mcod-minimalist-checkout' ); ?></th>
-											<th><?php esc_html_e( 'Descripción', 'mcod-minimalist-checkout' ); ?></th>
+											<th><?php esc_html_e( 'Element', 'mcod-minimalist-checkout' ); ?></th>
+											<th><?php esc_html_e( 'CSS Class to Use', 'mcod-minimalist-checkout' ); ?></th>
+											<th><?php esc_html_e( 'Description', 'mcod-minimalist-checkout' ); ?></th>
 										</tr>
 									</thead>
 									<tbody>
 										<tr>
-											<td><strong><?php esc_html_e( 'Contenedor del Campo (Layout)', 'mcod-minimalist-checkout' ); ?></strong></td>
+											<td><strong><?php esc_html_e( 'Field Container (Layout)', 'mcod-minimalist-checkout' ); ?></strong></td>
 											<td><code>mcrpd-field</code></td>
-											<td><?php esc_html_e( 'Aplica el espaciado correcto para que el campo encaje en el diseño.', 'mcod-minimalist-checkout' ); ?></td>
+											<td><?php esc_html_e( 'Applies proper spacing and structure to fit the layout.', 'mcod-minimalist-checkout' ); ?></td>
 										</tr>
 										<tr>
-											<td><strong><?php esc_html_e( 'Contenedor 50% de ancho', 'mcod-minimalist-checkout' ); ?></strong></td>
+											<td><strong><?php esc_html_e( '50% Width Container', 'mcod-minimalist-checkout' ); ?></strong></td>
 											<td><code>mcrpd-field-half</code></td>
-											<td><?php esc_html_e( 'Para colocar dos campos uno al lado del otro.', 'mcod-minimalist-checkout' ); ?></td>
+											<td><?php esc_html_e( 'Places two fields side-by-side.', 'mcod-minimalist-checkout' ); ?></td>
 										</tr>
 										<tr>
-											<td><strong><?php esc_html_e( 'Caja de Texto (Input Text)', 'mcod-minimalist-checkout' ); ?></strong></td>
+											<td><strong><?php esc_html_e( 'Text Input', 'mcod-minimalist-checkout' ); ?></strong></td>
 											<td><code>mcrpd-input-text</code></td>
-											<td><?php esc_html_e( 'Estiliza la caja para que luzca igual que las del plugin.', 'mcod-minimalist-checkout' ); ?></td>
+											<td><?php esc_html_e( 'Styles the text input box to match the checkout theme.', 'mcod-minimalist-checkout' ); ?></td>
 										</tr>
 										<tr>
-											<td><strong><?php esc_html_e( 'Caja Numérica (Input Number)', 'mcod-minimalist-checkout' ); ?></strong></td>
+											<td><strong><?php esc_html_e( 'Number Input', 'mcod-minimalist-checkout' ); ?></strong></td>
 											<td><code>mcrpd-input-number</code></td>
-											<td><?php esc_html_e( 'Ideal para campos de cédula, teléfono o códigos.', 'mcod-minimalist-checkout' ); ?></td>
+											<td><?php esc_html_e( 'Ideal for ID numbers, phone numbers, or numeric codes.', 'mcod-minimalist-checkout' ); ?></td>
 										</tr>
 										<tr>
-											<td><strong><?php esc_html_e( 'Menú Desplegable (Select)', 'mcod-minimalist-checkout' ); ?></strong></td>
+											<td><strong><?php esc_html_e( 'Select Dropdown', 'mcod-minimalist-checkout' ); ?></strong></td>
 											<td><code>mcrpd-input-select</code></td>
-											<td><?php esc_html_e( 'Aplica la flecha y bordes minimalistas a las listas.', 'mcod-minimalist-checkout' ); ?></td>
+											<td><?php esc_html_e( 'Applies minimalist borders and arrow indicators to dropdowns.', 'mcod-minimalist-checkout' ); ?></td>
 										</tr>
 									</tbody>
 								</table>
 
-								<h4><?php esc_html_e( 'Ejemplo práctico:', 'mcod-minimalist-checkout' ); ?></h4>
-								<p><?php esc_html_e( 'Si tu plugin te pide "Clases CSS para el contenedor", pon: ', 'mcod-minimalist-checkout' ); ?> <code>mcrpd-field mcrpd-field-half</code></p>
-								<p><?php esc_html_e( 'Si te pide "Clases CSS para el input", pon: ', 'mcod-minimalist-checkout' ); ?> <code>mcrpd-input-text</code></p>
+								<h4><?php esc_html_e( 'Practical Example:', 'mcod-minimalist-checkout' ); ?></h4>
+								<p><?php esc_html_e( 'If your plugin asks for "Container CSS Classes", enter:', 'mcod-minimalist-checkout' ); ?> <code>mcrpd-field mcrpd-field-half</code></p>
+								<p><?php esc_html_e( 'If it asks for "Input CSS Classes", enter:', 'mcod-minimalist-checkout' ); ?> <code>mcrpd-input-text</code></p>
 								
 								<div class="mcrpd-docs-notice">
-									<p><strong><?php esc_html_e( 'Nota automática:', 'mcod-minimalist-checkout' ); ?></strong> <?php esc_html_e( 'Cualquier campo que utilice la clase nativa', 'mcod-minimalist-checkout' ); ?> <code>input-text</code> <?php esc_html_e( 'de WooCommerce (que la mayoría de plugins añade por defecto) heredará los estilos visuales de forma automática.', 'mcod-minimalist-checkout' ); ?></p>
+									<p><strong><?php esc_html_e( 'Automatic Note:', 'mcod-minimalist-checkout' ); ?></strong> <?php esc_html_e( 'Any field using the native WooCommerce', 'mcod-minimalist-checkout' ); ?> <code>input-text</code> <?php esc_html_e( 'class (which most plugins include by default) will automatically inherit these visual styles.', 'mcod-minimalist-checkout' ); ?></p>
 								</div>
 							</div>
 
 							<div class="mcrpd-docs-card">
-								<h3><?php esc_html_e( 'Preguntas Frecuentes (FAQ)', 'mcod-minimalist-checkout' ); ?></h3>
+								<h3><?php esc_html_e( 'Custom Hooks (Actions)', 'mcod-minimalist-checkout' ); ?></h3>
+								<p><?php esc_html_e( 'While this plugin uses native WooCommerce hooks for the checkout form (Billing, Shipping, etc.), it provides its own custom actions to inject content into the order summary sidebar:', 'mcod-minimalist-checkout' ); ?></p>
+								<ul style="list-style-type: disc; margin-left: 20px; margin-bottom: 15px;">
+									<li><code>mcrpd_before_sidebar_product_list</code> - <?php esc_html_e( 'Fires before the cart products list.', 'mcod-minimalist-checkout' ); ?></li>
+									<li><code>mcrpd_before_sidebar_totals</code> - <?php esc_html_e( 'Fires before the order totals container.', 'mcod-minimalist-checkout' ); ?></li>
+									<li><code>mcrpd_after_sidebar_totals</code> - <?php esc_html_e( 'Fires at the very bottom of the sidebar.', 'mcod-minimalist-checkout' ); ?></li>
+								</ul>
+								
+								<h4><?php esc_html_e( 'Standard WooCommerce Hooks', 'mcod-minimalist-checkout' ); ?></h4>
+								<p><?php esc_html_e( 'To add features to the main forms (Contact, Billing address, Delivery), continue using native WooCommerce hooks. For example:', 'mcod-minimalist-checkout' ); ?></p>
+								<ul style="list-style-type: disc; margin-left: 20px;">
+									<li><code>woocommerce_before_checkout_billing_form</code> / <code>woocommerce_after_checkout_billing_form</code></li>
+									<li><code>woocommerce_before_checkout_shipping_form</code> / <code>woocommerce_after_checkout_shipping_form</code></li>
+								</ul>
+							</div>
+
+							<div class="mcrpd-docs-card">
+								<h3><?php esc_html_e( 'Frequently Asked Questions (FAQ)', 'mcod-minimalist-checkout' ); ?></h3>
 								<ul class="mcrpd-docs-faq">
 									<li>
-										<strong><?php esc_html_e( '¿Por qué no veo la cabecera y pie de página de mi web en el checkout?', 'mcod-minimalist-checkout' ); ?></strong>
-										<p><?php esc_html_e( 'Es el comportamiento por defecto para crear un entorno sin distracciones. Puedes reactivarlos en la pestaña "Design & Settings" marcando la opción "Use Theme Header/Footer".', 'mcod-minimalist-checkout' ); ?></p>
+										<strong><?php esc_html_e( 'Why are my theme header and footer hidden on the checkout page?', 'mcod-minimalist-checkout' ); ?></strong>
+										<p><?php esc_html_e( 'This is the default distraction-free mode to increase conversion rates. You can re-enable your theme header and footer in the "Design & Settings" tab by checking "Use Theme Header/Footer".', 'mcod-minimalist-checkout' ); ?></p>
 									</li>
 									<li>
-										<strong><?php esc_html_e( '¿Cómo cambio el orden de los campos?', 'mcod-minimalist-checkout' ); ?></strong>
-										<p><?php esc_html_e( 'Ve a la pestaña "Checkout Fields" y arrastra los campos usando el ícono de las tres rayas a la izquierda de cada fila.', 'mcod-minimalist-checkout' ); ?></p>
+										<strong><?php esc_html_e( 'If I disable the header, will I lose my tracking pixels and analytics?', 'mcod-minimalist-checkout' ); ?></strong>
+										<p><?php esc_html_e( 'No! The "distraction-free" mode only hides the visual elements of the header and footer using CSS. The underlying WordPress <head> is still fully loaded. All your Facebook Pixels, Google Analytics, Tag Manager, and SEO meta tags will continue to work perfectly.', 'mcod-minimalist-checkout' ); ?></p>
+									</li>
+									<li>
+										<strong><?php esc_html_e( 'How do I reorder checkout fields?', 'mcod-minimalist-checkout' ); ?></strong>
+										<p><?php esc_html_e( 'Go to the "Checkout Fields" tab and drag the fields using the handle icon on the left side of each row.', 'mcod-minimalist-checkout' ); ?></p>
 									</li>
 								</ul>
 							</div>
+							
+							<p style="margin-top: 30px; font-style: italic; color: #64748b; text-align: center;">
+								<?php esc_html_e( 'This plugin is in constant evolution. If you have ideas or suggestions, do not hesitate to contact me at hola@devcristian.com. Your collaboration is highly valued!', 'mcod-minimalist-checkout' ); ?>
+							</p>
 						</div>
 					</div>
 				</div>
@@ -531,10 +592,12 @@ class MCRPD_Checkout_Settings {
 	public function render_checkbox_field( $args ) {
 		$key   = $args['key'];
 		$value = $this->get_setting( $key, '0' );
-		echo '<input type="checkbox" name="' . esc_attr( self::OPTION_NAME . '[' . $key . ']' ) . '" value="1" ' . checked( 1, $value, false ) . ' />';
+		echo '<label class="mcrpd-checkbox-field-label">';
+		echo '<input type="checkbox" name="' . esc_attr( self::OPTION_NAME . '[' . $key . ']' ) . '" value="1" ' . checked( 1, $value, false ) . ' /> ';
 		if ( ! empty( $args['desc'] ) ) {
-			echo '<p class="description">' . esc_html( $args['desc'] ) . '</p>';
+			echo '<span class="description">' . esc_html( $args['desc'] ) . '</span>';
 		}
+		echo '</label>';
 	}
 
 	public function render_text_field( $args ) {

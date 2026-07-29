@@ -964,6 +964,14 @@ ul.mcrpd-shipping-methods-list li label .woocommerce-Price-amount {
 	clear: both !important;
 }
 
+body.woocommerce-order-received .woocommerce-error,
+body.woocommerce-order-received .woocommerce-message,
+body.woocommerce-order-received .woocommerce-info,
+body.woocommerce-order-received .woocommerce-notice {
+	padding: 20px 24px 20px 54px !important;
+	margin-top: 30px !important;
+}
+
 .woocommerce-error li,
 .woocommerce-message li,
 .woocommerce-info li,
@@ -991,6 +999,7 @@ ul.mcrpd-shipping-methods-list li label .woocommerce-Price-amount {
 	border: 1px solid #bbf7d0 !important;
 	color: #166534 !important;
 	display: flex !important;
+
 	align-items: center;
 	justify-content: space-between;
 }
@@ -1206,12 +1215,18 @@ body.mcrpd-distraction-free .mcrpd-checkout-page-container {
 	margin: 0 !important;
 }
 
+/* Prevent plugin's internal header and footer from being hidden */
+body.mcrpd-distraction-free header.mcrpd-checkout-brand-header,
+body.mcrpd-distraction-free footer.mcrpd-checkout-footer-links {
+	display: flex !important;
+}
+
 @media (max-width: 340px) {
 	.woocommerce-message {
 		align-items: flex-start;
 		justify-content: space-between;
 		flex-direction: column;
-		padding: 10px !important;
+		padding: 10px 10px 10px 40px !important;
 	}
 
 	.woocommerce-message::before {
