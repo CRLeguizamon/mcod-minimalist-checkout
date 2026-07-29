@@ -47,7 +47,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	</ul>
 
 	<!-- Coupon / Discount Section -->
-	<?php if ( wc_coupons_enabled() ) : ?>
+	<?php 
+	$mcrpd_settings = get_option( 'mcrpd_settings', array() );
+	$disable_coupon = isset( $mcrpd_settings['disable_coupon'] ) ? $mcrpd_settings['disable_coupon'] : '0';
+	
+	if ( wc_coupons_enabled() && '1' !== $disable_coupon ) : 
+	?>
 		<div class="mcrpd-sidebar-coupon-wrap">
 			<input type="text" id="mcrpd-coupon-input" class="mcrpd-coupon-input" placeholder="<?php esc_attr_e( 'Discount code', 'mcod-minimalist-checkout' ); ?>" aria-label="<?php esc_attr_e( 'Discount code', 'mcod-minimalist-checkout' ); ?>" />
 			<button type="button" id="mcrpd-coupon-submit" class="mcrpd-coupon-button"><?php esc_html_e( 'Apply', 'mcod-minimalist-checkout' ); ?></button>

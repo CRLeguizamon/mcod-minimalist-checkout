@@ -91,14 +91,14 @@
 	 * 2. shop-style AJAX Coupon Handlers
 	 */
 	function init_coupon_handlers() {
-		const $couponInput = $('#mcrpd-coupon-input');
-		const $couponSubmit = $('#mcrpd-coupon-submit');
-		const $couponMsg = $('#mcrpd-coupon-msg');
 
 		// Apply Coupon
 		$(document).on('click', '#mcrpd-coupon-submit', function (e) {
 			e.preventDefault();
 
+			const $couponInput = $('#mcrpd-coupon-input');
+			const $couponMsg = $('#mcrpd-coupon-msg');
+			
 			const couponCode = $couponInput.val().trim();
 			if (!couponCode) {
 				return;
