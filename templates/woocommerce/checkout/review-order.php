@@ -45,6 +45,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 		do_action( 'woocommerce_review_order_after_cart_contents' );
 		?>
 	</ul>
+	
+	<small class="mcrpd-return-to-cart-wrap">
+		<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="mcrpd-return-to-cart-link">
+			<?php esc_html_e( 'Return to cart', 'mcod-minimalist-checkout' ); ?>
+		</a>
+	</small>
 
 	<!-- Coupon / Discount Section -->
 	<?php 

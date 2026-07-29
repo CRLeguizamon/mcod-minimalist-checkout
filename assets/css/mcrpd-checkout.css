@@ -719,14 +719,14 @@ ul.mcrpd-shipping-methods-list li label .woocommerce-Price-amount {
 
 .mcrpd-product-thumbnail-wrap {
 	position: relative;
-	width: 64px;
-	height: 64px;
+	width: 50px;
+	height: 50px;
 	flex-shrink: 0;
 }
 
 .mcrpd-product-thumbnail {
-	width: 64px;
-	height: 64px;
+	width: 50px;
+	height: 50px;
 	border: 1px solid rgba(0, 0, 0, 0.1);
 	border-radius: 8px;
 	overflow: hidden;
@@ -793,6 +793,25 @@ ul.mcrpd-shipping-methods-list li label .woocommerce-Price-amount {
 	font-weight: 500;
 	color: #111111;
 	text-align: right;
+}
+
+/* Return to Cart link */
+.mcrpd-return-to-cart-wrap {
+	text-align: right;
+	margin-top: 15px;
+	margin-bottom: 5px;
+}
+
+.mcrpd-return-to-cart-link {
+	font-size: 11px;
+	color: #666666;
+	text-decoration: none;
+	transition: color 0.2s;
+}
+
+.mcrpd-return-to-cart-link:hover {
+	color: #111111;
+	text-decoration: underline;
 }
 
 /* Coupon block */
