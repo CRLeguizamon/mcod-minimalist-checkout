@@ -1,0 +1,449 @@
+/**
+ * Minimalist Checkout - Admin Field Editor Styles
+ */
+
+/* ==========================================================================
+   1. Field Editor Container & Tabs
+   ========================================================================== */
+.mcrpd-field-editor-wrap {
+	margin-top: 30px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.mcrpd-field-editor-wrap h2 {
+	margin: 0;
+	padding: 15px 20px;
+	background: #f0f0f1;
+	border-bottom: 1px solid #c3c4c7;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.mcrpd-field-tabs {
+	display: flex;
+	gap: 0;
+	border-bottom: 1px solid #c3c4c7;
+	background: #f6f7f7;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.mcrpd-field-tab {
+	padding: 12px 24px;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 500;
+	color: #50575e;
+	border-bottom: 2px solid transparent;
+	transition: all 0.15s ease;
+	user-select: none;
+	background: none;
+	border-top: none;
+	border-left: none;
+	border-right: none;
+}
+
+.mcrpd-field-tab:hover {
+	color: #2271b1;
+	background: #fff;
+}
+
+.mcrpd-field-tab.active {
+	color: #2271b1;
+	border-bottom-color: #2271b1;
+	background: #fff;
+	font-weight: 600;
+}
+
+/* ==========================================================================
+   2. Field List Table
+   ========================================================================== */
+.mcrpd-field-tab-content {
+	display: none;
+	padding: 0;
+}
+
+.mcrpd-field-tab-content.active {
+	display: block;
+}
+
+.mcrpd-field-list {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.mcrpd-field-list thead th {
+	background: #f6f7f7;
+	padding: 10px 12px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #50575e;
+	text-align: left;
+	border-bottom: 1px solid #c3c4c7;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.mcrpd-field-list thead th:first-child {
+	width: 36px;
+	text-align: center;
+}
+
+.mcrpd-field-list tbody tr {
+	border-bottom: 1px solid #f0f0f1;
+	transition: background-color 0.15s ease;
+}
+
+.mcrpd-field-list tbody tr:hover {
+	background-color: #f6f7f7;
+}
+
+.mcrpd-field-list tbody tr.mcrpd-field-disabled {
+	opacity: 0.55;
+}
+
+.mcrpd-field-list tbody tr.ui-sortable-helper {
+	background: #fff;
+	box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+	border-radius: 2px;
+}
+
+.mcrpd-field-list tbody tr.ui-sortable-placeholder {
+	visibility: visible !important;
+	background: #e8f0fe !important;
+	border: 1px dashed #2271b1 !important;
+}
+
+.mcrpd-field-list tbody td {
+	padding: 10px 12px;
+	font-size: 13px;
+	color: #1d2327;
+	vertical-align: middle;
+}
+
+/* ==========================================================================
+   3. Drag Handle
+   ========================================================================== */
+.mcrpd-drag-handle {
+	cursor: grab;
+	text-align: center;
+	color: #a7aaad;
+	font-size: 18px;
+	user-select: none;
+	width: 36px;
+}
+
+.mcrpd-drag-handle:active {
+	cursor: grabbing;
+}
+
+.mcrpd-drag-handle .dashicons {
+	vertical-align: middle;
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+}
+
+/* ==========================================================================
+   4. Field Key Column
+   ========================================================================== */
+.mcrpd-field-key {
+	font-family: monospace;
+	font-size: 12px;
+	color: #50575e;
+	background: #f0f0f1;
+	padding: 3px 8px;
+	border-radius: 3px;
+	display: inline-block;
+}
+
+/* ==========================================================================
+   5. Toggle Switch (Enabled/Disabled)
+   ========================================================================== */
+.mcrpd-toggle-wrap {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.mcrpd-toggle {
+	position: relative;
+	display: inline-block;
+	width: 36px;
+	height: 20px;
+}
+
+.mcrpd-toggle input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+	position: absolute;
+}
+
+.mcrpd-toggle-slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #a7aaad;
+	transition: 0.2s;
+	border-radius: 20px;
+}
+
+.mcrpd-toggle-slider:before {
+	position: absolute;
+	content: "";
+	height: 14px;
+	width: 14px;
+	left: 3px;
+	bottom: 3px;
+	background-color: white;
+	transition: 0.2s;
+	border-radius: 50%;
+}
+
+.mcrpd-toggle input:checked + .mcrpd-toggle-slider {
+	background-color: #2271b1;
+}
+
+.mcrpd-toggle input:checked + .mcrpd-toggle-slider:before {
+	transform: translateX(16px);
+}
+
+.mcrpd-toggle input:disabled + .mcrpd-toggle-slider {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.mcrpd-lock-icon {
+	color: #a7aaad;
+	font-size: 14px;
+	cursor: help;
+}
+
+/* ==========================================================================
+   6. Text Inputs in Editor
+   ========================================================================== */
+.mcrpd-field-list input[type="text"] {
+	width: 100%;
+	min-width: 120px;
+	max-width: 260px;
+	padding: 5px 10px;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	font-size: 13px;
+	color: #2c3338;
+	background: #fff;
+	transition: border-color 0.15s;
+	box-sizing: border-box;
+}
+
+.mcrpd-field-list input[type="text"]:focus {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	outline: none;
+}
+
+.mcrpd-field-list input[type="text"]:disabled {
+	background: #f6f7f7;
+	color: #a7aaad;
+	cursor: not-allowed;
+}
+
+/* ==========================================================================
+   7. Reset Button & Actions
+   ========================================================================== */
+.mcrpd-field-editor-actions {
+	padding: 15px 20px;
+	background: #f6f7f7;
+	border-top: 1px solid #c3c4c7;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.mcrpd-reset-fields-btn {
+	color: #b32d2e;
+	background: none;
+	border: 1px solid #b32d2e;
+	padding: 6px 16px;
+	border-radius: 3px;
+	font-size: 13px;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+
+.mcrpd-reset-fields-btn:hover {
+	background: #b32d2e;
+	color: #fff;
+}
+
+.mcrpd-editor-note {
+	font-size: 12px;
+	color: #646970;
+	font-style: italic;
+}
+
+/* ==========================================================================
+   8. Responsive
+   ========================================================================== */
+@media (max-width: 782px) {
+	.mcrpd-field-tabs {
+		flex-wrap: wrap;
+	}
+
+	.mcrpd-field-tab {
+		padding: 10px 16px;
+		font-size: 12px;
+	}
+
+	.mcrpd-field-list input[type="text"] {
+		min-width: 80px;
+		max-width: 160px;
+	}
+
+	.mcrpd-field-editor-actions {
+		flex-direction: column;
+		gap: 10px;
+	}
+}
+
+/* ==========================================================================
+   9. Top Level Settings Tabs
+   ========================================================================== */
+.mcrpd-main-tabs {
+	margin-bottom: 20px !important;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.mcrpd-main-tabs .nav-tab {
+	cursor: pointer;
+	outline: none;
+	user-select: none;
+}
+
+.mcrpd-main-tab-content {
+	display: none;
+}
+
+.mcrpd-main-tab-content.active {
+	display: block;
+}
+
+/* ==========================================================================
+   10. Documentation Tab Styles
+   ========================================================================== */
+.mcrpd-docs-wrap {
+	margin-top: 20px;
+}
+
+.mcrpd-docs-wrap h2 {
+	margin: 0 0 20px 0;
+	font-size: 20px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.mcrpd-docs-content {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 20px;
+}
+
+.mcrpd-docs-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 20px;
+	box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+}
+
+.mcrpd-docs-card h3 {
+	margin-top: 0;
+	margin-bottom: 15px;
+	font-size: 16px;
+	color: #1d2327;
+	border-bottom: 1px solid #f0f0f1;
+	padding-bottom: 10px;
+}
+
+.mcrpd-docs-card h4 {
+	margin-top: 20px;
+	margin-bottom: 10px;
+	font-size: 14px;
+	color: #1d2327;
+}
+
+.mcrpd-docs-card p {
+	font-size: 14px;
+	line-height: 1.6;
+	color: #3c434a;
+	margin-bottom: 15px;
+}
+
+.mcrpd-docs-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 20px 0;
+}
+
+.mcrpd-docs-table th,
+.mcrpd-docs-table td {
+	text-align: left;
+	padding: 10px 12px;
+	border: 1px solid #c3c4c7;
+	font-size: 13px;
+}
+
+.mcrpd-docs-table th {
+	background: #f6f7f7;
+	font-weight: 600;
+	color: #2c3338;
+}
+
+.mcrpd-docs-table td code {
+	background: #f0f0f1;
+	padding: 3px 6px;
+	border-radius: 3px;
+	color: #2271b1;
+	font-size: 13px;
+}
+
+.mcrpd-docs-notice {
+	background: #f0f6fc;
+	border-left: 4px solid #2271b1;
+	padding: 15px;
+	margin-top: 20px;
+}
+
+.mcrpd-docs-notice p {
+	margin: 0;
+}
+
+.mcrpd-docs-faq {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.mcrpd-docs-faq li {
+	margin-bottom: 20px;
+}
+
+.mcrpd-docs-faq li:last-child {
+	margin-bottom: 0;
+}
+
+.mcrpd-docs-faq li strong {
+	display: block;
+	font-size: 14px;
+	color: #1d2327;
+	margin-bottom: 5px;
+}
