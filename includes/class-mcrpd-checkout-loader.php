@@ -318,15 +318,15 @@ class MCMCHK_Checkout_Loader {
 				echo '<ul id="shipping_method" class="woocommerce-shipping-methods mcrpd-shipping-methods-list">';
 
 				foreach ( $available_methods as $method ) {
-					$method_id   = esc_attr( $method->id );
+					$method_id   = $method->id;
 					$method_name = sanitize_title( $method->id );
-					$input_id    = 'shipping_method_' . esc_attr( $i ) . '_' . $method_name;
+					$input_id    = 'shipping_method_' . absint( $i ) . '_' . $method_name;
 					$is_checked  = ( $chosen_method === $method->id );
 					$label_text  = wc_cart_totals_shipping_method_label( $method );
 
 					printf(
 						'<li class="%s">',
-						$is_checked ? 'mcrpd-shipping-card selected active' : 'mcrpd-shipping-card'
+						esc_attr( $is_checked ? 'mcrpd-shipping-card selected active' : 'mcrpd-shipping-card' )
 					);
 
 					if ( 1 < count( $available_methods ) ) {

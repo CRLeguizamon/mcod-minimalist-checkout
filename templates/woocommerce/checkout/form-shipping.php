@@ -27,11 +27,11 @@ $ship_to_different_checked          = $disable_different_shipping_address ? fals
 		<div class="mcrpd-checkout-section mcrpd-shipping-selector-section">
 			<h3 class="mcrpd-section-title"><?php esc_html_e( 'Shipping address', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 			<div class="mcrpd-shipping-selector-group">
-				<label class="mcrpd-shipping-radio-label <?php echo ! $ship_to_different_checked ? 'selected' : ''; ?>">
+				<label class="mcrpd-shipping-radio-label <?php echo esc_attr( ! $ship_to_different_checked ? 'selected' : '' ); ?>">
 					<input type="radio" name="mcmchk_shipping_different" value="no" <?php checked( ! $ship_to_different_checked ); ?> />
 					<span class="mcrpd-radio-text"><?php esc_html_e( 'Same as billing address', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
 				</label>
-				<label class="mcrpd-shipping-radio-label <?php echo $ship_to_different_checked ? 'selected' : ''; ?>">
+				<label class="mcrpd-shipping-radio-label <?php echo esc_attr( $ship_to_different_checked ? 'selected' : '' ); ?>">
 					<input type="radio" name="mcmchk_shipping_different" value="yes" <?php checked( $ship_to_different_checked ); ?> />
 					<span class="mcrpd-radio-text"><?php esc_html_e( 'Use a different shipping address', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
 				</label>
@@ -46,7 +46,7 @@ $ship_to_different_checked          = $disable_different_shipping_address ? fals
 	<?php endif; ?>
 
 	<!-- Shipping address wrapper -->
-	<div class="shipping_address" style="<?php echo $ship_to_different_checked ? 'display: block;' : 'display: none !important;'; ?>">
+	<div class="shipping_address" style="<?php echo esc_attr( $ship_to_different_checked ? 'display: block;' : 'display: none !important;' ); ?>">
 		<!-- Primary Delivery / Shipping section -->
 		<div class="mcrpd-checkout-section mcrpd-delivery-section">
 			<h3 class="mcrpd-section-title"><?php esc_html_e( 'Delivery', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>

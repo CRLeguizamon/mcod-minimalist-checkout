@@ -28,16 +28,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<li class="mcrpd-sidebar-product-item">
 					<div class="mcrpd-product-thumbnail-wrap">
 						<div class="mcrpd-product-thumbnail">
-							<?php echo $thumbnail; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							<?php echo wp_kses_post( $thumbnail ); ?>
 						</div>
 						<span class="mcrpd-product-quantity-badge"><?php echo esc_html( $cart_item['quantity'] ); ?></span>
 					</div>
 					<div class="mcrpd-product-info">
 						<span class="mcrpd-product-name"><?php echo esc_html( $_product->get_name() ); ?></span>
-						<?php echo wc_get_formatted_cart_item_data( $cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo wp_kses_post( wc_get_formatted_cart_item_data( $cart_item ) ); ?>
 					</div>
 					<div class="mcrpd-product-total-price">
-						<?php echo apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo wp_kses_post( apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key ) ); ?>
 					</div>
 				</li>
 				<?php
@@ -115,7 +115,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					}
 					
 					if ( $shipping_total > 0 ) {
-						echo wc_price( $shipping_total ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						echo wp_kses_post( wc_price( $shipping_total ) );
 					} else {
 						if ( $shipping_label ) {
 							echo esc_html( $shipping_label );

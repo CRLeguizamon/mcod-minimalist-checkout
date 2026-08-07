@@ -281,7 +281,7 @@ class MCMCHK_Checkout_Settings {
 							$fields   = $this->get_section_fields( $section_key, $field_overrides );
 						?>
 						<div id="mcrpd-tab-<?php echo esc_attr( $section_key ); ?>"
-							 class="mcrpd-field-tab-content <?php echo $is_first ? 'active' : ''; ?>"
+							 class="mcrpd-field-tab-content <?php echo esc_attr( $is_first ? 'active' : '' ); ?>"
 							 data-section="<?php echo esc_attr( $section_key ); ?>">
 							<table class="mcrpd-field-list">
 								<thead>
@@ -304,7 +304,7 @@ class MCMCHK_Checkout_Settings {
 													: array( 'label' => '', 'placeholder' => '' );
 									?>
 									<tr data-field-key="<?php echo esc_attr( $field_key ); ?>"
-										class="<?php echo ! $is_enabled ? 'mcrpd-field-disabled' : ''; ?>">
+										class="<?php echo esc_attr( ! $is_enabled ? 'mcrpd-field-disabled' : '' ); ?>">
 										<td class="mcrpd-drag-handle"><span class="dashicons dashicons-menu"></span></td>
 										<td><span class="mcrpd-field-key"><?php echo esc_html( $field_key ); ?></span></td>
 										<td>
@@ -392,12 +392,12 @@ class MCMCHK_Checkout_Settings {
 									<div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
 										<p style="color: #b91c1c; margin: 0;">
 											<strong><?php esc_html_e( 'Warning:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong>
-											<?php 
-											printf(
-												/* translators: %s: URL to WooCommerce advanced settings */
-												esc_html__( 'Your checkout page is not created or assigned. You must create it and assign it in %s.', 'mcod-minimalist-checkout-for-woocommerce' ),
-												'<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=advanced' ) ) . '" style="color: #991b1b; text-decoration: underline;">WooCommerce &gt; Settings &gt; Advanced</a>'
-											);
+							<?php
+							echo wp_kses_post( sprintf(
+								/* translators: %s: URL to WooCommerce advanced settings */
+								esc_html__( 'Your checkout page is not created or assigned. You must create it and assign it in %s.', 'mcod-minimalist-checkout-for-woocommerce' ),
+								'<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=advanced' ) ) . '" style="color: #991b1b; text-decoration: underline;">WooCommerce &gt; Settings &gt; Advanced</a>'
+							) );
 											?>
 										</p>
 									</div>
