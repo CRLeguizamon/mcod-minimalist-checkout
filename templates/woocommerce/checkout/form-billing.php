@@ -23,11 +23,11 @@ $has_email          = isset( $all_billing_fields['billing_email'] );
 	<!-- Contact section (Only shown if billing_email exists) -->
 	<div class="mcrpd-checkout-section mcrpd-contact-section">
 		<div class="mcrpd-section-header">
-			<h3 class="mcrpd-section-title"><?php esc_html_e( 'Contact', 'mcod-minimalist-checkout' ); ?></h3>
+			<h3 class="mcrpd-section-title"><?php esc_html_e( 'Contact', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 			<?php if ( ! is_user_logged_in() ) : ?>
 				<div class="mcrpd-login-wrap">
-					<span><?php esc_html_e( 'Already have an account?', 'mcod-minimalist-checkout' ); ?></span>
-					<a href="#" class="mcrpd-login-link" id="mcrpd-login-toggle"><?php esc_html_e( 'Log in', 'mcod-minimalist-checkout' ); ?></a>
+					<span><?php esc_html_e( 'Already have an account?', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
+					<a href="#" class="mcrpd-login-link" id="mcrpd-login-toggle"><?php esc_html_e( 'Log in', 'mcod-minimalist-checkout-for-woocommerce' ); ?></a>
 				</div>
 			<?php endif; ?>
 		</div>
@@ -37,15 +37,15 @@ $has_email          = isset( $all_billing_fields['billing_email'] );
 		<div class="mcrpd-inline-login-form" id="mcrpd-inline-login" style="display: none;">
 			<div class="mcrpd-login-fields-row">
 				<div class="mcrpd-login-field">
-					<input type="text" id="mcrpd-login-username" placeholder="<?php esc_attr_e( 'Username or email', 'mcod-minimalist-checkout' ); ?>" autocomplete="username" />
+					<input type="text" id="mcrpd-login-username" placeholder="<?php esc_attr_e( 'Username or email', 'mcod-minimalist-checkout-for-woocommerce' ); ?>" autocomplete="username" />
 				</div>
 				<div class="mcrpd-login-field">
-					<input type="password" id="mcrpd-login-password" placeholder="<?php esc_attr_e( 'Password', 'mcod-minimalist-checkout' ); ?>" autocomplete="current-password" />
+					<input type="password" id="mcrpd-login-password" placeholder="<?php esc_attr_e( 'Password', 'mcod-minimalist-checkout-for-woocommerce' ); ?>" autocomplete="current-password" />
 				</div>
 			</div>
 			<div class="mcrpd-login-actions">
-				<button type="button" id="mcrpd-login-submit" class="mcrpd-login-button"><?php esc_html_e( 'Log in', 'mcod-minimalist-checkout' ); ?></button>
-				<a href="<?php echo esc_url( wp_lostpassword_url( wc_get_checkout_url() ) ); ?>" class="mcrpd-forgot-password-link"><?php esc_html_e( 'Forgot password?', 'mcod-minimalist-checkout' ); ?></a>
+				<button type="button" id="mcrpd-login-submit" class="mcrpd-login-button"><?php esc_html_e( 'Log in', 'mcod-minimalist-checkout-for-woocommerce' ); ?></button>
+				<a href="<?php echo esc_url( wp_lostpassword_url( wc_get_checkout_url() ) ); ?>" class="mcrpd-forgot-password-link"><?php esc_html_e( 'Forgot password?', 'mcod-minimalist-checkout-for-woocommerce' ); ?></a>
 			</div>
 			<div id="mcrpd-login-message" class="mcrpd-login-message"></div>
 		</div>
@@ -55,8 +55,8 @@ $has_email          = isset( $all_billing_fields['billing_email'] );
 			<?php woocommerce_form_field( 'billing_email', $all_billing_fields['billing_email'], $checkout->get_value( 'billing_email' ) ); ?>
 			<div class="mcrpd-checkbox-wrapper mcrpd-newsletter-wrap">
 				<label class="mcrpd-checkbox-label">
-					<input type="checkbox" id="mcrpd_newsletter" name="mcrpd_newsletter" value="1" checked />
-					<span class="mcrpd-checkbox-text"><?php esc_html_e( 'Email me with news and offers', 'mcod-minimalist-checkout' ); ?></span>
+					<input type="checkbox" id="mcmchk_newsletter" name="mcmchk_newsletter" value="1" checked />
+					<span class="mcrpd-checkbox-text"><?php esc_html_e( 'Email me with news and offers', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
 				</label>
 			</div>
 		</div>
@@ -66,7 +66,7 @@ $has_email          = isset( $all_billing_fields['billing_email'] );
 	<!-- Billing Fields wrapper -->
 	<div class="mcrpd-checkout-section mcrpd-billing-section">
 		
-		<h3 class="mcrpd-section-title"><?php esc_html_e( 'Billing address', 'mcod-minimalist-checkout' ); ?></h3>
+		<h3 class="mcrpd-section-title"><?php esc_html_e( 'Billing address', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 
 		<?php do_action( 'woocommerce_before_checkout_billing_form', $checkout ); ?>
 

@@ -11,11 +11,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Check if there are checkout fields to render
 if ( empty( $checkout->get_checkout_fields() ) ) {
-	echo esc_html__( 'No checkout fields are available.', 'mcod-minimalist-checkout' );
+	echo esc_html__( 'No checkout fields are available.', 'mcod-minimalist-checkout-for-woocommerce' );
 	return;
 }
 
-$settings = get_option( 'mcrpd_settings', array() );
+$settings = get_option( 'mcmchk_settings', array() );
 $hide_brand_header = ! empty( $settings['hide_brand_header'] ) ? true : false;
 $brand_name = ! empty( $settings['brand_name'] ) ? $settings['brand_name'] : get_bloginfo( 'name' );
 $brand_logo = ! empty( $settings['brand_logo'] ) ? $settings['brand_logo'] : '';
@@ -46,7 +46,7 @@ $hide_labels = ! isset( $settings['hide_labels'] ) || '1' === $settings['hide_la
 				}
 				?>
 			</a>
-			<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="mcrpd-cart-icon-link" aria-label="<?php esc_attr_e( 'Back to cart', 'mcod-minimalist-checkout' ); ?>">
+			<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="mcrpd-cart-icon-link" aria-label="<?php esc_attr_e( 'Back to cart', 'mcod-minimalist-checkout-for-woocommerce' ); ?>">
 				<svg class="mcrpd-cart-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 					<circle cx="9" cy="21" r="1"></circle>
 					<circle cx="20" cy="21" r="1"></circle>
@@ -74,16 +74,16 @@ $hide_labels = ! isset( $settings['hide_labels'] ) || '1' === $settings['hide_la
 
 			<!-- Shipping Methods Section -->
 			<div class="mcrpd-checkout-section mcrpd-shipping-methods-section">
-				<h3 class="mcrpd-section-title"><?php esc_html_e( 'Shipping methods', 'mcod-minimalist-checkout' ); ?></h3>
+				<h3 class="mcrpd-section-title"><?php esc_html_e( 'Shipping methods', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 				<div id="mcrpd-checkout-shipping-methods">
-					<?php MCRPD_Checkout_Loader::get_instance()->render_shipping_methods(); ?>
+					<?php MCMCHK_Checkout_Loader::get_instance()->render_shipping_methods(); ?>
 				</div>
 			</div>
 
 			<!-- Payment Gateways Section -->
 			<div class="mcrpd-checkout-section mcrpd-payment-section">
-				<h3 class="mcrpd-section-title"><?php esc_html_e( 'Payment', 'mcod-minimalist-checkout' ); ?></h3>
-				<p class="mcrpd-section-subtitle"><?php esc_html_e( 'All transactions are secure and encrypted.', 'mcod-minimalist-checkout' ); ?></p>
+				<h3 class="mcrpd-section-title"><?php esc_html_e( 'Payment', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
+				<p class="mcrpd-section-subtitle"><?php esc_html_e( 'All transactions are secure and encrypted.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 				
 				<div id="payment" class="woocommerce-checkout-payment">
 					<?php woocommerce_checkout_payment(); ?>
@@ -95,16 +95,16 @@ $hide_labels = ! isset( $settings['hide_labels'] ) || '1' === $settings['hide_la
 		<!-- Footer policy links -->
 		<footer class="mcrpd-checkout-footer-links">
 			<?php if ( $link_refund ) : ?>
-				<a href="<?php echo esc_url( $link_refund ); ?>" target="_blank"><?php esc_html_e( 'Refund policy', 'mcod-minimalist-checkout' ); ?></a>
+				<a href="<?php echo esc_url( $link_refund ); ?>" target="_blank"><?php esc_html_e( 'Refund policy', 'mcod-minimalist-checkout-for-woocommerce' ); ?></a>
 			<?php endif; ?>
 			<?php if ( $link_privacy ) : ?>
-				<a href="<?php echo esc_url( $link_privacy ); ?>" target="_blank"><?php esc_html_e( 'Privacy policy', 'mcod-minimalist-checkout' ); ?></a>
+				<a href="<?php echo esc_url( $link_privacy ); ?>" target="_blank"><?php esc_html_e( 'Privacy policy', 'mcod-minimalist-checkout-for-woocommerce' ); ?></a>
 			<?php endif; ?>
 			<?php if ( $link_terms ) : ?>
-				<a href="<?php echo esc_url( $link_terms ); ?>" target="_blank"><?php esc_html_e( 'Terms of service', 'mcod-minimalist-checkout' ); ?></a>
+				<a href="<?php echo esc_url( $link_terms ); ?>" target="_blank"><?php esc_html_e( 'Terms of service', 'mcod-minimalist-checkout-for-woocommerce' ); ?></a>
 			<?php endif; ?>
 			<?php if ( $link_contact ) : ?>
-				<a href="<?php echo esc_url( $link_contact ); ?>" target="_blank"><?php esc_html_e( 'Contact', 'mcod-minimalist-checkout' ); ?></a>
+				<a href="<?php echo esc_url( $link_contact ); ?>" target="_blank"><?php esc_html_e( 'Contact', 'mcod-minimalist-checkout-for-woocommerce' ); ?></a>
 			<?php endif; ?>
 		</footer>
 

@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="mcrpd-checkout-review-inner woocommerce-checkout-review-order-table">
 
 	<!-- Cart Products List -->
-	<?php do_action( 'mcrpd_before_sidebar_product_list' ); ?>
+	<?php do_action( 'mcmchk_before_sidebar_product_list' ); ?>
 	<ul class="mcrpd-sidebar-product-list">
 		<?php
 		do_action( 'woocommerce_review_order_before_cart_contents' );
@@ -50,20 +50,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	
 	<small class="mcrpd-return-to-cart-wrap">
 		<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="mcrpd-return-to-cart-link">
-			<?php esc_html_e( 'Return to cart', 'mcod-minimalist-checkout' ); ?>
+			<?php esc_html_e( 'Return to cart', 'mcod-minimalist-checkout-for-woocommerce' ); ?>
 		</a>
 	</small>
 
 	<!-- Coupon / Discount Section -->
 	<?php 
-	$mcrpd_settings = get_option( 'mcrpd_settings', array() );
-	$disable_coupon = isset( $mcrpd_settings['disable_coupon'] ) ? $mcrpd_settings['disable_coupon'] : '0';
+	$mcmchk_settings = get_option( 'mcmchk_settings', array() );
+	$disable_coupon = isset( $mcmchk_settings['disable_coupon'] ) ? $mcmchk_settings['disable_coupon'] : '0';
 	
 	if ( wc_coupons_enabled() && '1' !== $disable_coupon ) : 
 	?>
 		<div class="mcrpd-sidebar-coupon-wrap">
-			<input type="text" id="mcrpd-coupon-input" class="mcrpd-coupon-input" placeholder="<?php esc_attr_e( 'Discount code', 'mcod-minimalist-checkout' ); ?>" aria-label="<?php esc_attr_e( 'Discount code', 'mcod-minimalist-checkout' ); ?>" />
-			<button type="button" id="mcrpd-coupon-submit" class="mcrpd-coupon-button"><?php esc_html_e( 'Apply', 'mcod-minimalist-checkout' ); ?></button>
+			<input type="text" id="mcrpd-coupon-input" class="mcrpd-coupon-input" placeholder="<?php esc_attr_e( 'Discount code', 'mcod-minimalist-checkout-for-woocommerce' ); ?>" aria-label="<?php esc_attr_e( 'Discount code', 'mcod-minimalist-checkout-for-woocommerce' ); ?>" />
+			<button type="button" id="mcrpd-coupon-submit" class="mcrpd-coupon-button"><?php esc_html_e( 'Apply', 'mcod-minimalist-checkout-for-woocommerce' ); ?></button>
 		</div>
 		<div id="mcrpd-coupon-msg" class="mcrpd-coupon-message"></div>
 	<?php endif; ?>
@@ -71,12 +71,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<hr class="mcrpd-sidebar-divider" />
 
 	<!-- Totals Rows -->
-	<?php do_action( 'mcrpd_before_sidebar_totals' ); ?>
+	<?php do_action( 'mcmchk_before_sidebar_totals' ); ?>
 	<div class="mcrpd-sidebar-totals">
 		
 		<!-- Subtotal -->
 		<div class="mcrpd-totals-row">
-			<span class="mcrpd-totals-label"><?php esc_html_e( 'Subtotal', 'mcod-minimalist-checkout' ); ?></span>
+			<span class="mcrpd-totals-label"><?php esc_html_e( 'Subtotal', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
 			<span class="mcrpd-totals-value"><?php wc_cart_totals_subtotal_html(); ?></span>
 		</div>
 
@@ -84,11 +84,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php foreach ( WC()->cart->get_coupons() as $code => $coupon ) : ?>
 			<div class="mcrpd-totals-row mcrpd-coupon-row">
 				<span class="mcrpd-totals-label">
-					<?php esc_html_e( 'Discount', 'mcod-minimalist-checkout' ); ?>
+					<?php esc_html_e( 'Discount', 'mcod-minimalist-checkout-for-woocommerce' ); ?>
 					<span class="mcrpd-coupon-tag">
 						<span class="mcrpd-coupon-tag-icon">🏷️</span>
 						<?php echo esc_html( $code ); ?>
-						<a href="#" class="mcrpd-remove-coupon-btn" data-coupon="<?php echo esc_attr( $code ); ?>" aria-label="<?php esc_attr_e( 'Remove coupon', 'mcod-minimalist-checkout' ); ?>">×</a>
+						<a href="#" class="mcrpd-remove-coupon-btn" data-coupon="<?php echo esc_attr( $code ); ?>" aria-label="<?php esc_attr_e( 'Remove coupon', 'mcod-minimalist-checkout-for-woocommerce' ); ?>">×</a>
 					</span>
 				</span>
 				<span class="mcrpd-totals-value">-<?php wc_cart_totals_coupon_html( $coupon ); ?></span>
@@ -97,7 +97,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<!-- Shipping Cost (Simplified representation) -->
 		<div class="mcrpd-totals-row">
-			<span class="mcrpd-totals-label"><?php esc_html_e( 'Shipping', 'mcod-minimalist-checkout' ); ?></span>
+			<span class="mcrpd-totals-label"><?php esc_html_e( 'Shipping', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
 			<span class="mcrpd-totals-value">
 				<?php
 				if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) {
@@ -120,11 +120,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 						if ( $shipping_label ) {
 							echo esc_html( $shipping_label );
 						} else {
-							esc_html_e( 'Free', 'mcod-minimalist-checkout' );
+							esc_html_e( 'Free', 'mcod-minimalist-checkout-for-woocommerce' );
 						}
 					}
 				} else {
-					esc_html_e( 'Free', 'mcod-minimalist-checkout' );
+					esc_html_e( 'Free', 'mcod-minimalist-checkout-for-woocommerce' );
 				}
 				?>
 			</span>
@@ -153,7 +153,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<!-- Final Order Total -->
 		<div class="mcrpd-totals-row mcrpd-total-row">
-			<span class="mcrpd-total-label"><?php esc_html_e( 'Total', 'mcod-minimalist-checkout' ); ?></span>
+			<span class="mcrpd-total-label"><?php esc_html_e( 'Total', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
 			<span class="mcrpd-total-value">
 				<span class="mcrpd-currency-code"><?php echo esc_html( get_woocommerce_currency() ); ?></span>
 				<?php wc_cart_totals_order_total_html(); ?>
@@ -163,6 +163,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php do_action( 'woocommerce_review_order_after_order_total' ); ?>
 
 	</div>
-	<?php do_action( 'mcrpd_after_sidebar_totals' ); ?>
+	<?php do_action( 'mcmchk_after_sidebar_totals' ); ?>
 
 </div>

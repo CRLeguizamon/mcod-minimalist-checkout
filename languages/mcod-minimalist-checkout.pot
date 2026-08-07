@@ -473,7 +473,7 @@ msgid ""
 "This will render a diagnostic panel (visible only to Administrators) "
 "directly on the checkout frontend. It displays active session status, "
 "WooCommerce region settings, active checkout plugins, field priority rules "
-"after filters, and a complete dump of the mcrpd_settings database option."
+"after filters, and a complete dump of the mcmchk_settings database option."
 msgstr ""
 #: includes/class-mcrpd-checkout-settings.php:478
 msgid ""
@@ -538,4 +538,28 @@ msgid "Checkout Fields"
 msgstr ""
 #: includes/class-mcrpd-checkout-settings.php:362
 msgid "Restore Default Values"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:469
+msgid "Custom Hooks (Actions & Filters)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:476
+msgid "Custom Shipping Hooks"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:477
+msgid "To prevent conflicts with WooCommerce core, the plugin replaces the native shipping loop hooks with its own unique prefixes:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:479
+msgid "Filters the shipping package name."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:480
+msgid "Filters the HTML shown when no shipping methods are available."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:481
+msgid "Action fired after each shipping rate is rendered."
 msgstr ""

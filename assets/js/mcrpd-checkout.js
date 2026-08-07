@@ -23,7 +23,7 @@
 	 * If "Same as billing" is active, copy all Billing fields into Shipping fields in the background.
 	 */
 	function init_address_syncing() {
-		const $shippingSelector = $('input[name="mcrpd_shipping_different"]');
+		const $shippingSelector = $('input[name="mcmchk_shipping_different"]');
 		const $shippingAddressWrap = $('.shipping_address');
 
 		// Handle radio group toggle
@@ -41,8 +41,8 @@
 		// Sync our custom radio state if the native checkbox is changed by other scripts
 		$(document).on('change', '#ship-to-different-address-checkbox', function () {
 			const isChecked = $(this).is(':checked');
-			const $radioYes = $('input[name="mcrpd_shipping_different"][value="yes"]');
-			const $radioNo = $('input[name="mcrpd_shipping_different"][value="no"]');
+			const $radioYes = $('input[name="mcmchk_shipping_different"][value="yes"]');
+			const $radioNo = $('input[name="mcmchk_shipping_different"][value="no"]');
 
 			if (isChecked) {
 				$radioYes.prop('checked', true).closest('.mcrpd-shipping-radio-label').addClass('selected');
@@ -62,7 +62,7 @@
 		// Sync on change or blur of billing fields to shipping fields
 		fieldsToSync.forEach(function (field) {
 			$('#billing_' + field).on('change blur', function () {
-				if (!$shippingSelector.length || $('input[name="mcrpd_shipping_different"]:checked').val() === 'no') {
+				if (!$shippingSelector.length || $('input[name="mcmchk_shipping_different"]:checked').val() === 'no') {
 					const val = $(this).val();
 					$('#shipping_' + field).val(val);
 
@@ -75,7 +75,7 @@
 		});
 
 		// Trigger initial sync if "no" is checked (Same as billing)
-		if (!$shippingSelector.length || $('input[name="mcrpd_shipping_different"]:checked').val() === 'no') {
+		if (!$shippingSelector.length || $('input[name="mcmchk_shipping_different"]:checked').val() === 'no') {
 			perform_fields_sync();
 		}
 
@@ -115,13 +115,13 @@
 
 			$couponMsg.removeClass('success error').html('');
 
-			const ajaxUrl = mcrpd_params.wc_ajax_url.toString().replace('%%endpoint%%', 'apply_coupon');
+			const ajaxUrl = mcmchk_params.wc_ajax_url.toString().replace('%%endpoint%%', 'apply_coupon');
 
 			$.ajax({
 				type: 'POST',
 				url: ajaxUrl,
 				data: {
-					security: mcrpd_params.apply_coupon_nonce,
+					security: mcmchk_params.apply_coupon_nonce,
 					coupon_code: couponCode
 				},
 				success: function (response) {
@@ -170,13 +170,13 @@
 				}
 			});
 
-			const ajaxUrl = mcrpd_params.wc_ajax_url.toString().replace('%%endpoint%%', 'remove_coupon');
+			const ajaxUrl = mcmchk_params.wc_ajax_url.toString().replace('%%endpoint%%', 'remove_coupon');
 
 			$.ajax({
 				type: 'POST',
 				url: ajaxUrl,
 				data: {
-					security: mcrpd_params.remove_coupon_nonce,
+					security: mcmchk_params.remove_coupon_nonce,
 					coupon: couponCode
 				},
 				success: function () {
@@ -283,7 +283,7 @@
 			const password = $('#mcrpd-login-password').val();
 
 			if (!username || !password) {
-				$loginMsg.removeClass('success').addClass('error').html(mcrpd_params.i18n_login_empty);
+				$loginMsg.removeClass('success').addClass('error').html(mcmchk_params.i18n_login_empty);
 				return;
 			}
 
@@ -293,10 +293,10 @@
 
 			$.ajax({
 				type: 'POST',
-				url: mcrpd_params.ajax_url,
+				url: mcmchk_params.ajax_url,
 				data: {
-					action: 'mcrpd_ajax_login',
-					security: mcrpd_params.login_nonce,
+					action: 'mcmchk_ajax_login',
+					security: mcmchk_params.login_nonce,
 					username: username,
 					password: password
 				},

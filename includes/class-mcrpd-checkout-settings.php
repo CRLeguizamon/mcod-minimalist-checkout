@@ -11,12 +11,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class MCRPD_Checkout_Settings {
+class MCMCHK_Checkout_Settings {
 
 	/**
 	 * Settings key
 	 */
-	const OPTION_NAME = 'mcrpd_settings';
+	const OPTION_NAME = 'mcmchk_settings';
 
 	/**
 	 * Fields that cannot be disabled (required by WooCommerce).
@@ -86,8 +86,8 @@ class MCRPD_Checkout_Settings {
 	 */
 	public function add_settings_page() {
 		add_menu_page(
-			__( 'Minimalist Checkout', 'mcod-minimalist-checkout' ),
-			__( 'Minimalist Checkout', 'mcod-minimalist-checkout' ),
+			__( 'Minimalist Checkout', 'mcod-minimalist-checkout-for-woocommerce' ),
+			__( 'Minimalist Checkout', 'mcod-minimalist-checkout-for-woocommerce' ),
 			'manage_woocommerce',
 			'mcrpd-checkout-settings',
 			array( $this, 'render_settings_page' ),
@@ -114,37 +114,38 @@ class MCRPD_Checkout_Settings {
 		wp_enqueue_style( 'dashicons' );
 
 		// Plugin admin assets
-		wp_enqueue_style( 'mcrpd-admin-css', MCRPD_ASSETS . 'css/mcrpd-admin.css', array(), MCRPD_VERSION );
-		wp_enqueue_script( 'mcrpd-admin-js', MCRPD_ASSETS . 'js/mcrpd-admin.js', array( 'jquery', 'jquery-ui-sortable', 'wp-color-picker' ), MCRPD_VERSION, true );
+		wp_enqueue_style( 'mcrpd-admin-css', MCMCHK_ASSETS . 'css/mcrpd-admin.css', array(), MCMCHK_VERSION );
+		wp_enqueue_script( 'mcrpd-admin-js', MCMCHK_ASSETS . 'js/mcrpd-admin.js', array( 'jquery', 'jquery-ui-sortable', 'wp-color-picker' ), MCMCHK_VERSION, true );
 	}
 
 	/**
 	 * Register settings.
 	 */
 	public function register_settings() {
-		register_setting( 'mcrpd_settings_group', self::OPTION_NAME, array( $this, 'sanitize_settings' ) );
+		register_setting( 'mcmchk_settings_group', self::OPTION_NAME, array( $this, 'sanitize_settings' ) );
 
 		// General Section
-		add_settings_section( 'mcrpd_general_section', __( 'General Settings', 'mcod-minimalist-checkout' ), null, 'mcrpd-checkout-settings' );
-		add_settings_field( 'use_theme_hf', __( 'Use Theme Header/Footer', 'mcod-minimalist-checkout' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcrpd_general_section', array( 'key' => 'use_theme_hf', 'desc' => __( 'Use your theme\'s header and footer instead of a completely blank page.', 'mcod-minimalist-checkout' ) ) );
-		add_settings_field( 'primary_color', __( 'Primary Color', 'mcod-minimalist-checkout' ), array( $this, 'render_color_field' ), 'mcrpd-checkout-settings', 'mcrpd_general_section', array( 'key' => 'primary_color', 'default' => '#1773b0' ) );
-		add_settings_field( 'hide_labels', __( 'Hide Field Labels', 'mcod-minimalist-checkout' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcrpd_general_section', array( 'key' => 'hide_labels', 'desc' => __( 'Hide labels above checkout fields for a cleaner design (shop style) and use placeholders only. (Enabled by default)', 'mcod-minimalist-checkout' ) ) );
-		add_settings_field( 'disable_different_shipping_address', __( 'Disable "Use a different shipping address" button', 'mcod-minimalist-checkout' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcrpd_general_section', array( 'key' => 'disable_different_shipping_address', 'desc' => __( 'Always use the billing address as the shipping address and hide the shipping address selector.', 'mcod-minimalist-checkout' ) ) );
-		add_settings_field( 'disable_coupon', __( 'Disable Coupon Field', 'mcod-minimalist-checkout' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcrpd_general_section', array( 'key' => 'disable_coupon', 'desc' => __( 'Hide the discount code field on the checkout page.', 'mcod-minimalist-checkout' ) ) );
+		add_settings_section( 'mcmchk_general_section', __( 'General Settings', 'mcod-minimalist-checkout-for-woocommerce' ), null, 'mcrpd-checkout-settings' );
+		add_settings_field( 'force_template', __( 'Force Template Layout', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'force_template', 'desc' => __( 'Force the minimalist template to load on the checkout page. Use this if your theme does not allow selecting the page template.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+		add_settings_field( 'use_theme_hf', __( 'Use Theme Header/Footer', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'use_theme_hf', 'desc' => __( 'Use your theme\'s header and footer instead of a completely blank page.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+		add_settings_field( 'primary_color', __( 'Primary Color', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_color_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'primary_color', 'default' => '#1773b0' ) );
+		add_settings_field( 'hide_labels', __( 'Hide Field Labels', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'hide_labels', 'desc' => __( 'Hide labels above checkout fields for a cleaner design (shop style) and use placeholders only. (Enabled by default)', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+		add_settings_field( 'disable_different_shipping_address', __( 'Disable "Use a different shipping address" button', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'disable_different_shipping_address', 'desc' => __( 'Always use the billing address as the shipping address and hide the shipping address selector.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+		add_settings_field( 'disable_coupon', __( 'Disable Coupon Field', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'disable_coupon', 'desc' => __( 'Hide the discount code field on the checkout page.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
 
 		// Branding Section
-		add_settings_section( 'mcrpd_branding_section', __( 'Branding', 'mcod-minimalist-checkout' ), null, 'mcrpd-checkout-settings' );
-		add_settings_field( 'hide_brand_header', __( 'Hide Brand Header', 'mcod-minimalist-checkout' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcrpd_branding_section', array( 'key' => 'hide_brand_header', 'desc' => __( 'Check to hide the entire brand header section completely.', 'mcod-minimalist-checkout' ) ) );
-		add_settings_field( 'brand_logo', __( 'Brand Logo URL', 'mcod-minimalist-checkout' ), array( $this, 'render_media_field' ), 'mcrpd-checkout-settings', 'mcrpd_branding_section', array( 'key' => 'brand_logo' ) );
-		add_settings_field( 'brand_logo_width', __( 'Brand Logo Width (px)', 'mcod-minimalist-checkout' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcrpd_branding_section', array( 'key' => 'brand_logo_width', 'desc' => __( 'Set the maximum width of the logo in pixels. Default is 125.', 'mcod-minimalist-checkout' ) ) );
-		add_settings_field( 'brand_name', __( 'Brand Name', 'mcod-minimalist-checkout' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcrpd_branding_section', array( 'key' => 'brand_name', 'desc' => __( 'Used as fallback if logo is not provided.', 'mcod-minimalist-checkout' ) ) );
+		add_settings_section( 'mcmchk_branding_section', __( 'Branding', 'mcod-minimalist-checkout-for-woocommerce' ), null, 'mcrpd-checkout-settings' );
+		add_settings_field( 'hide_brand_header', __( 'Hide Brand Header', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_branding_section', array( 'key' => 'hide_brand_header', 'desc' => __( 'Check to hide the entire brand header section completely.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+		add_settings_field( 'brand_logo', __( 'Brand Logo URL', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_media_field' ), 'mcrpd-checkout-settings', 'mcmchk_branding_section', array( 'key' => 'brand_logo' ) );
+		add_settings_field( 'brand_logo_width', __( 'Brand Logo Width (px)', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcmchk_branding_section', array( 'key' => 'brand_logo_width', 'desc' => __( 'Set the maximum width of the logo in pixels. Default is 125.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+		add_settings_field( 'brand_name', __( 'Brand Name', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcmchk_branding_section', array( 'key' => 'brand_name', 'desc' => __( 'Used as fallback if logo is not provided.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
 
 		// Footer Links
-		add_settings_section( 'mcrpd_footer_section', __( 'Footer Links', 'mcod-minimalist-checkout' ), null, 'mcrpd-checkout-settings' );
-		add_settings_field( 'link_refund', __( 'Refund Policy Link', 'mcod-minimalist-checkout' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcrpd_footer_section', array( 'key' => 'link_refund' ) );
-		add_settings_field( 'link_privacy', __( 'Privacy Policy Link', 'mcod-minimalist-checkout' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcrpd_footer_section', array( 'key' => 'link_privacy' ) );
-		add_settings_field( 'link_terms', __( 'Terms of Service Link', 'mcod-minimalist-checkout' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcrpd_footer_section', array( 'key' => 'link_terms' ) );
-		add_settings_field( 'link_contact', __( 'Contact Link', 'mcod-minimalist-checkout' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcrpd_footer_section', array( 'key' => 'link_contact' ) );
+		add_settings_section( 'mcmchk_footer_section', __( 'Footer Links', 'mcod-minimalist-checkout-for-woocommerce' ), null, 'mcrpd-checkout-settings' );
+		add_settings_field( 'link_refund', __( 'Refund Policy Link', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcmchk_footer_section', array( 'key' => 'link_refund' ) );
+		add_settings_field( 'link_privacy', __( 'Privacy Policy Link', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcmchk_footer_section', array( 'key' => 'link_privacy' ) );
+		add_settings_field( 'link_terms', __( 'Terms of Service Link', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcmchk_footer_section', array( 'key' => 'link_terms' ) );
+		add_settings_field( 'link_contact', __( 'Contact Link', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcmchk_footer_section', array( 'key' => 'link_contact' ) );
 	}
 
 	/**
@@ -153,6 +154,7 @@ class MCRPD_Checkout_Settings {
 	public function sanitize_settings( $input ) {
 		$output = get_option( self::OPTION_NAME, array() );
 
+		$output['force_template']    = isset( $input['force_template'] ) ? '1' : '0';
 		$output['use_theme_hf']      = isset( $input['use_theme_hf'] ) ? '1' : '0';
 		$output['hide_labels']       = isset( $input['hide_labels'] ) ? '1' : '0';
 		$output['hide_brand_header'] = isset( $input['hide_brand_header'] ) ? '1' : '0';
@@ -238,16 +240,16 @@ class MCRPD_Checkout_Settings {
 		$field_overrides = isset( $settings['field_overrides'] ) ? $settings['field_overrides'] : array();
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Minimalist Checkout Settings', 'mcod-minimalist-checkout' ); ?></h1>
+			<h1><?php esc_html_e( 'Minimalist Checkout Settings', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h1>
 			
 			<h2 class="nav-tab-wrapper mcrpd-main-tabs" style="margin-bottom: 20px;">
-				<a href="#mcrpd-tab-design" class="nav-tab nav-tab-active" data-tab="design"><?php esc_html_e( 'Design & Settings', 'mcod-minimalist-checkout' ); ?></a>
-				<a href="#mcrpd-tab-fields" class="nav-tab" data-tab="fields"><?php esc_html_e( 'Checkout Fields', 'mcod-minimalist-checkout' ); ?></a>
-				<a href="#mcrpd-tab-docs" class="nav-tab" data-tab="docs"><?php esc_html_e( 'Compatibility & Help', 'mcod-minimalist-checkout' ); ?></a>
+				<a href="#mcrpd-tab-design" class="nav-tab nav-tab-active" data-tab="design"><?php esc_html_e( 'Design & Settings', 'mcod-minimalist-checkout-for-woocommerce' ); ?></a>
+				<a href="#mcrpd-tab-fields" class="nav-tab" data-tab="fields"><?php esc_html_e( 'Checkout Fields', 'mcod-minimalist-checkout-for-woocommerce' ); ?></a>
+				<a href="#mcrpd-tab-docs" class="nav-tab" data-tab="docs"><?php esc_html_e( 'Compatibility & Help', 'mcod-minimalist-checkout-for-woocommerce' ); ?></a>
 			</h2>
 
 			<form method="post" action="options.php">
-				<?php settings_fields( 'mcrpd_settings_group' ); ?>
+				<?php settings_fields( 'mcmchk_settings_group' ); ?>
 
 				<!-- Tab 1: Design & General Settings -->
 				<div id="mcrpd-main-tab-design" class="mcrpd-main-tab-content active">
@@ -257,21 +259,21 @@ class MCRPD_Checkout_Settings {
 				<!-- Tab 2: Checkout Field Editor -->
 				<div id="mcrpd-main-tab-fields" class="mcrpd-main-tab-content" style="display: none;">
 					<div class="mcrpd-field-editor-wrap">
-						<h2><?php esc_html_e( 'Checkout Fields', 'mcod-minimalist-checkout' ); ?></h2>
+						<h2><?php esc_html_e( 'Checkout Fields', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h2>
 
 						<!-- Tab Navigation -->
 						<div class="mcrpd-field-tabs">
-							<button type="button" class="mcrpd-field-tab active" data-tab="billing"><?php esc_html_e( 'Billing', 'mcod-minimalist-checkout' ); ?></button>
-							<button type="button" class="mcrpd-field-tab" data-tab="shipping"><?php esc_html_e( 'Shipping', 'mcod-minimalist-checkout' ); ?></button>
-							<button type="button" class="mcrpd-field-tab" data-tab="order"><?php esc_html_e( 'Order', 'mcod-minimalist-checkout' ); ?></button>
+							<button type="button" class="mcrpd-field-tab active" data-tab="billing"><?php esc_html_e( 'Billing', 'mcod-minimalist-checkout-for-woocommerce' ); ?></button>
+							<button type="button" class="mcrpd-field-tab" data-tab="shipping"><?php esc_html_e( 'Shipping', 'mcod-minimalist-checkout-for-woocommerce' ); ?></button>
+							<button type="button" class="mcrpd-field-tab" data-tab="order"><?php esc_html_e( 'Order', 'mcod-minimalist-checkout-for-woocommerce' ); ?></button>
 						</div>
 
 						<!-- Tab Contents -->
 						<?php
 						$sections = array(
-							'billing'  => __( 'Billing', 'mcod-minimalist-checkout' ),
-							'shipping' => __( 'Shipping', 'mcod-minimalist-checkout' ),
-							'order'    => __( 'Order', 'mcod-minimalist-checkout' ),
+							'billing'  => __( 'Billing', 'mcod-minimalist-checkout-for-woocommerce' ),
+							'shipping' => __( 'Shipping', 'mcod-minimalist-checkout-for-woocommerce' ),
+							'order'    => __( 'Order', 'mcod-minimalist-checkout-for-woocommerce' ),
 						);
 
 						foreach ( $sections as $section_key => $section_label ) :
@@ -285,11 +287,11 @@ class MCRPD_Checkout_Settings {
 								<thead>
 									<tr>
 										<th></th>
-										<th><?php esc_html_e( 'Field', 'mcod-minimalist-checkout' ); ?></th>
-										<th><?php esc_html_e( 'Active', 'mcod-minimalist-checkout' ); ?></th>
-										<th><?php esc_html_e( 'Width', 'mcod-minimalist-checkout' ); ?></th>
-										<th><?php esc_html_e( 'Label', 'mcod-minimalist-checkout' ); ?></th>
-										<th><?php esc_html_e( 'Placeholder', 'mcod-minimalist-checkout' ); ?></th>
+										<th><?php esc_html_e( 'Field', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
+										<th><?php esc_html_e( 'Active', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
+										<th><?php esc_html_e( 'Width', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
+										<th><?php esc_html_e( 'Label', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
+										<th><?php esc_html_e( 'Placeholder', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
 									</tr>
 								</thead>
 								<tbody>
@@ -315,15 +317,15 @@ class MCRPD_Checkout_Settings {
 													<span class="mcrpd-toggle-slider"></span>
 												</label>
 												<?php if ( $is_locked ) : ?>
-													<span class="mcrpd-lock-icon dashicons dashicons-lock" title="<?php esc_attr_e( 'Required WooCommerce field', 'mcod-minimalist-checkout' ); ?>"></span>
+													<span class="mcrpd-lock-icon dashicons dashicons-lock" title="<?php esc_attr_e( 'Required WooCommerce field', 'mcod-minimalist-checkout-for-woocommerce' ); ?>"></span>
 												<?php endif; ?>
 											</div>
 										</td>
 										<td>
 											<select class="mcrpd-field-width-select" <?php disabled( ! $is_enabled ); ?>>
-												<option value="form-row-wide" <?php selected( $width, 'form-row-wide' ); ?>><?php esc_html_e( '100%', 'mcod-minimalist-checkout' ); ?></option>
-												<option value="form-row-first" <?php selected( $width, 'form-row-first' ); ?>><?php esc_html_e( '50% (Left)', 'mcod-minimalist-checkout' ); ?></option>
-												<option value="form-row-last" <?php selected( $width, 'form-row-last' ); ?>><?php esc_html_e( '50% (Right)', 'mcod-minimalist-checkout' ); ?></option>
+												<option value="form-row-wide" <?php selected( $width, 'form-row-wide' ); ?>><?php esc_html_e( '100%', 'mcod-minimalist-checkout-for-woocommerce' ); ?></option>
+												<option value="form-row-first" <?php selected( $width, 'form-row-first' ); ?>><?php esc_html_e( '50% (Left)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></option>
+												<option value="form-row-last" <?php selected( $width, 'form-row-last' ); ?>><?php esc_html_e( '50% (Right)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></option>
 											</select>
 										</td>
 										<td>
@@ -348,21 +350,21 @@ class MCRPD_Checkout_Settings {
 						<?php endforeach; ?>
 
 						<!-- Hidden JSON field for serialized data -->
-						<textarea id="mcrpd_field_overrides_json"
+						<textarea id="mcmchk_field_overrides_json"
 								  name="<?php echo esc_attr( self::OPTION_NAME . '[field_overrides_json]' ); ?>"
 								  style="display:none;"></textarea>
 						<input type="hidden"
-							   id="mcrpd_reset_fields_flag"
+							   id="mcmchk_reset_fields_flag"
 							   name="<?php echo esc_attr( self::OPTION_NAME . '[reset_fields_flag]' ); ?>"
 							   value="0" />
 
 						<!-- Actions footer -->
 						<div class="mcrpd-field-editor-actions">
 							<button type="button" class="mcrpd-reset-fields-btn">
-								<?php esc_html_e( 'Restore Default Values', 'mcod-minimalist-checkout' ); ?>
+								<?php esc_html_e( 'Restore Default Values', 'mcod-minimalist-checkout-for-woocommerce' ); ?>
 							</button>
 							<span class="mcrpd-editor-note">
-								<?php esc_html_e( 'Drag fields to reorder. Changes will apply after saving.', 'mcod-minimalist-checkout' ); ?>
+								<?php esc_html_e( 'Drag fields to reorder. Changes will apply after saving.', 'mcod-minimalist-checkout-for-woocommerce' ); ?>
 							</span>
 						</div>
 					</div>
@@ -371,17 +373,17 @@ class MCRPD_Checkout_Settings {
 				<!-- Tab 3: Documentation -->
 				<div id="mcrpd-main-tab-docs" class="mcrpd-main-tab-content" style="display: none;">
 					<div class="mcrpd-docs-wrap">
-						<h2><?php esc_html_e( 'Documentation & Compatibility', 'mcod-minimalist-checkout' ); ?></h2>
+						<h2><?php esc_html_e( 'Documentation & Compatibility', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h2>
 						
 						<div class="mcrpd-docs-content">
 							<div class="mcrpd-docs-card">
-								<h3><?php esc_html_e( 'What does this plugin do?', 'mcod-minimalist-checkout' ); ?></h3>
-								<p><?php esc_html_e( 'Minimalist Checkout transforms the standard WooCommerce checkout page into a streamlined, clean, and conversion-focused experience. It optionally hides the theme header and footer to eliminate distractions and applies a modern, responsive two-column layout.', 'mcod-minimalist-checkout' ); ?></p>
+								<h3><?php esc_html_e( 'What does this plugin do?', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
+								<p><?php esc_html_e( 'Minimalist Checkout transforms the standard WooCommerce checkout page into a streamlined, clean, and conversion-focused experience. It optionally hides the theme header and footer to eliminate distractions and applies a modern, responsive two-column layout.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 							</div>
 
 							<div class="mcrpd-docs-card">
-								<h3><?php esc_html_e( 'Checkout Page Setup', 'mcod-minimalist-checkout' ); ?></h3>
-								<p><?php esc_html_e( 'For Minimalist Checkout to work properly, you must configure and edit the page selected as "Checkout" in WooCommerce:', 'mcod-minimalist-checkout' ); ?></p>
+								<h3><?php esc_html_e( 'Checkout Page Setup', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
+								<p><?php esc_html_e( 'For Minimalist Checkout to work properly, you must configure and edit the page selected as "Checkout" in WooCommerce:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 								
 								<?php
 								$checkout_page_id = wc_get_page_id( 'checkout' );
@@ -389,11 +391,11 @@ class MCRPD_Checkout_Settings {
 								?>
 									<div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px; margin-bottom: 15px; border-radius: 4px;">
 										<p style="color: #b91c1c; margin: 0;">
-											<strong><?php esc_html_e( 'Warning:', 'mcod-minimalist-checkout' ); ?></strong>
+											<strong><?php esc_html_e( 'Warning:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong>
 											<?php 
 											printf(
 												/* translators: %s: URL to WooCommerce advanced settings */
-												esc_html__( 'Your checkout page is not created or assigned. You must create it and assign it in %s.', 'mcod-minimalist-checkout' ),
+												esc_html__( 'Your checkout page is not created or assigned. You must create it and assign it in %s.', 'mcod-minimalist-checkout-for-woocommerce' ),
 												'<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=advanced' ) ) . '" style="color: #991b1b; text-decoration: underline;">WooCommerce &gt; Settings &gt; Advanced</a>'
 											);
 											?>
@@ -401,81 +403,89 @@ class MCRPD_Checkout_Settings {
 									</div>
 								<?php endif; ?>
 
-								<p><?php esc_html_e( 'Once assigned, edit the page and ensure these two requirements are met:', 'mcod-minimalist-checkout' ); ?></p>
+								<p><?php esc_html_e( 'Once assigned, edit the page and ensure these two requirements are met:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 								<ul style="list-style-type: decimal; margin-left: 20px; margin-bottom: 15px;">
-									<li><strong><?php esc_html_e( 'Page Attributes:', 'mcod-minimalist-checkout' ); ?></strong> <?php esc_html_e( 'Select the "Minimalist Checkout" template.', 'mcod-minimalist-checkout' ); ?></li>
-									<li><strong><?php esc_html_e( 'Content:', 'mcod-minimalist-checkout' ); ?></strong> <?php esc_html_e( 'The page MUST contain the WooCommerce shortcode:', 'mcod-minimalist-checkout' ); ?> <code>[woocommerce_checkout]</code></li>
+									<li><strong><?php esc_html_e( 'Page Attributes:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong> <?php esc_html_e( 'Select the "Minimalist Checkout" template.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></li>
+									<li><strong><?php esc_html_e( 'Content:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong> <?php esc_html_e( 'The page MUST contain the WooCommerce shortcode:', 'mcod-minimalist-checkout-for-woocommerce' ); ?> <code>[woocommerce_checkout]</code></li>
 								</ul>
 							</div>
 
 							<div class="mcrpd-docs-card">
-								<h3><?php esc_html_e( 'Diagnostics & Debugging', 'mcod-minimalist-checkout' ); ?></h3>
-								<p><?php esc_html_e( 'If you experience issues with fields not hiding, incorrect ordering, or 3rd-party plugin conflicts, you can add the following shortcode to your checkout page content (below [woocommerce_checkout]):', 'mcod-minimalist-checkout' ); ?></p>
-								<p><code>[mcrpd_debug]</code></p>
-								<p><?php esc_html_e( 'This will render a diagnostic panel (visible only to Administrators) directly on the checkout frontend. It displays active session status, WooCommerce region settings, active checkout plugins, field priority rules after filters, and a complete dump of the mcrpd_settings database option.', 'mcod-minimalist-checkout' ); ?></p>
+								<h3><?php esc_html_e( 'Diagnostics & Debugging', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
+								<p><?php esc_html_e( 'If you experience issues with fields not hiding, incorrect ordering, or 3rd-party plugin conflicts, you can add the following shortcode to your checkout page content (below [woocommerce_checkout]):', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
+								<p><code>[mcmchk_debug]</code></p>
+								<p><?php esc_html_e( 'This will render a diagnostic panel (visible only to Administrators) directly on the checkout frontend. It displays active session status, WooCommerce region settings, active checkout plugins, field priority rules after filters, and a complete dump of the mcmchk_settings database option.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 							</div>
 
 							<div class="mcrpd-docs-card">
-								<h3><?php esc_html_e( '3rd-Party Plugin Field Compatibility', 'mcod-minimalist-checkout' ); ?></h3>
-								<p><?php esc_html_e( 'If you use 3rd-party plugins (such as custom field editors, ID/Tax number plugins, etc.) to add extra fields to the checkout, they might not inherit the styling automatically. You can resolve this by adding the following CSS classes to those fields within your other plugin\'s settings:', 'mcod-minimalist-checkout' ); ?></p>
+								<h3><?php esc_html_e( '3rd-Party Plugin Field Compatibility', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
+								<p><?php esc_html_e( 'If you use 3rd-party plugins (such as custom field editors, ID/Tax number plugins, etc.) to add extra fields to the checkout, they might not inherit the styling automatically. You can resolve this by adding the following CSS classes to those fields within your other plugin\'s settings:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 								
 								<table class="mcrpd-docs-table">
 									<thead>
 										<tr>
-											<th><?php esc_html_e( 'Element', 'mcod-minimalist-checkout' ); ?></th>
-											<th><?php esc_html_e( 'CSS Class to Use', 'mcod-minimalist-checkout' ); ?></th>
-											<th><?php esc_html_e( 'Description', 'mcod-minimalist-checkout' ); ?></th>
+											<th><?php esc_html_e( 'Element', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
+											<th><?php esc_html_e( 'CSS Class to Use', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
+											<th><?php esc_html_e( 'Description', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
 										</tr>
 									</thead>
 									<tbody>
 										<tr>
-											<td><strong><?php esc_html_e( 'Field Container (Layout)', 'mcod-minimalist-checkout' ); ?></strong></td>
+											<td><strong><?php esc_html_e( 'Field Container (Layout)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong></td>
 											<td><code>mcrpd-field</code></td>
-											<td><?php esc_html_e( 'Applies proper spacing and structure to fit the layout.', 'mcod-minimalist-checkout' ); ?></td>
+											<td><?php esc_html_e( 'Applies proper spacing and structure to fit the layout.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td>
 										</tr>
 										<tr>
-											<td><strong><?php esc_html_e( '50% Width Container', 'mcod-minimalist-checkout' ); ?></strong></td>
+											<td><strong><?php esc_html_e( '50% Width Container', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong></td>
 											<td><code>mcrpd-field-half</code></td>
-											<td><?php esc_html_e( 'Places two fields side-by-side.', 'mcod-minimalist-checkout' ); ?></td>
+											<td><?php esc_html_e( 'Places two fields side-by-side.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td>
 										</tr>
 										<tr>
-											<td><strong><?php esc_html_e( 'Text Input', 'mcod-minimalist-checkout' ); ?></strong></td>
+											<td><strong><?php esc_html_e( 'Text Input', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong></td>
 											<td><code>mcrpd-input-text</code></td>
-											<td><?php esc_html_e( 'Styles the text input box to match the checkout theme.', 'mcod-minimalist-checkout' ); ?></td>
+											<td><?php esc_html_e( 'Styles the text input box to match the checkout theme.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td>
 										</tr>
 										<tr>
-											<td><strong><?php esc_html_e( 'Number Input', 'mcod-minimalist-checkout' ); ?></strong></td>
+											<td><strong><?php esc_html_e( 'Number Input', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong></td>
 											<td><code>mcrpd-input-number</code></td>
-											<td><?php esc_html_e( 'Ideal for ID numbers, phone numbers, or numeric codes.', 'mcod-minimalist-checkout' ); ?></td>
+											<td><?php esc_html_e( 'Ideal for ID numbers, phone numbers, or numeric codes.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td>
 										</tr>
 										<tr>
-											<td><strong><?php esc_html_e( 'Select Dropdown', 'mcod-minimalist-checkout' ); ?></strong></td>
+											<td><strong><?php esc_html_e( 'Select Dropdown', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong></td>
 											<td><code>mcrpd-input-select</code></td>
-											<td><?php esc_html_e( 'Applies minimalist borders and arrow indicators to dropdowns.', 'mcod-minimalist-checkout' ); ?></td>
+											<td><?php esc_html_e( 'Applies minimalist borders and arrow indicators to dropdowns.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td>
 										</tr>
 									</tbody>
 								</table>
 
-								<h4><?php esc_html_e( 'Practical Example:', 'mcod-minimalist-checkout' ); ?></h4>
-								<p><?php esc_html_e( 'If your plugin asks for "Container CSS Classes", enter:', 'mcod-minimalist-checkout' ); ?> <code>mcrpd-field mcrpd-field-half</code></p>
-								<p><?php esc_html_e( 'If it asks for "Input CSS Classes", enter:', 'mcod-minimalist-checkout' ); ?> <code>mcrpd-input-text</code></p>
+								<h4><?php esc_html_e( 'Practical Example:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h4>
+								<p><?php esc_html_e( 'If your plugin asks for "Container CSS Classes", enter:', 'mcod-minimalist-checkout-for-woocommerce' ); ?> <code>mcrpd-field mcrpd-field-half</code></p>
+								<p><?php esc_html_e( 'If it asks for "Input CSS Classes", enter:', 'mcod-minimalist-checkout-for-woocommerce' ); ?> <code>mcrpd-input-text</code></p>
 								
 								<div class="mcrpd-docs-notice">
-									<p><strong><?php esc_html_e( 'Automatic Note:', 'mcod-minimalist-checkout' ); ?></strong> <?php esc_html_e( 'Any field using the native WooCommerce', 'mcod-minimalist-checkout' ); ?> <code>input-text</code> <?php esc_html_e( 'class (which most plugins include by default) will automatically inherit these visual styles.', 'mcod-minimalist-checkout' ); ?></p>
+									<p><strong><?php esc_html_e( 'Automatic Note:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong> <?php esc_html_e( 'Any field using the native WooCommerce', 'mcod-minimalist-checkout-for-woocommerce' ); ?> <code>input-text</code> <?php esc_html_e( 'class (which most plugins include by default) will automatically inherit these visual styles.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 								</div>
 							</div>
 
 							<div class="mcrpd-docs-card">
-								<h3><?php esc_html_e( 'Custom Hooks (Actions)', 'mcod-minimalist-checkout' ); ?></h3>
-								<p><?php esc_html_e( 'While this plugin uses native WooCommerce hooks for the checkout form (Billing, Shipping, etc.), it provides its own custom actions to inject content into the order summary sidebar:', 'mcod-minimalist-checkout' ); ?></p>
+								<h3><?php esc_html_e( 'Custom Hooks (Actions & Filters)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
+								<p><?php esc_html_e( 'While this plugin uses native WooCommerce hooks for the checkout form (Billing, Shipping, etc.), it provides its own custom actions to inject content into the order summary sidebar:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 								<ul style="list-style-type: disc; margin-left: 20px; margin-bottom: 15px;">
-									<li><code>mcrpd_before_sidebar_product_list</code> - <?php esc_html_e( 'Fires before the cart products list.', 'mcod-minimalist-checkout' ); ?></li>
-									<li><code>mcrpd_before_sidebar_totals</code> - <?php esc_html_e( 'Fires before the order totals container.', 'mcod-minimalist-checkout' ); ?></li>
-									<li><code>mcrpd_after_sidebar_totals</code> - <?php esc_html_e( 'Fires at the very bottom of the sidebar.', 'mcod-minimalist-checkout' ); ?></li>
+									<li><code>mcmchk_before_sidebar_product_list</code> - <?php esc_html_e( 'Fires before the cart products list.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></li>
+									<li><code>mcmchk_before_sidebar_totals</code> - <?php esc_html_e( 'Fires before the order totals container.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></li>
+									<li><code>mcmchk_after_sidebar_totals</code> - <?php esc_html_e( 'Fires at the very bottom of the sidebar.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></li>
 								</ul>
 								
-								<h4><?php esc_html_e( 'Standard WooCommerce Hooks', 'mcod-minimalist-checkout' ); ?></h4>
-								<p><?php esc_html_e( 'To add features to the main forms (Contact, Billing address, Delivery), continue using native WooCommerce hooks. For example:', 'mcod-minimalist-checkout' ); ?></p>
+								<h4><?php esc_html_e( 'Custom Shipping Hooks', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h4>
+								<p><?php esc_html_e( 'To prevent conflicts with WooCommerce core, the plugin replaces the native shipping loop hooks with its own unique prefixes:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
+								<ul style="list-style-type: disc; margin-left: 20px; margin-bottom: 15px;">
+									<li><code>mcmchk_shipping_package_name</code> - <?php esc_html_e( 'Filters the shipping package name.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></li>
+									<li><code>mcmchk_no_shipping_available_html</code> - <?php esc_html_e( 'Filters the HTML shown when no shipping methods are available.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></li>
+									<li><code>mcmchk_after_shipping_rate</code> - <?php esc_html_e( 'Action fired after each shipping rate is rendered.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></li>
+								</ul>
+								
+								<h4><?php esc_html_e( 'Standard WooCommerce Hooks', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h4>
+								<p><?php esc_html_e( 'To add features to the main forms (Contact, Billing address, Delivery), continue using native WooCommerce hooks. For example:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 								<ul style="list-style-type: disc; margin-left: 20px;">
 									<li><code>woocommerce_before_checkout_billing_form</code> / <code>woocommerce_after_checkout_billing_form</code></li>
 									<li><code>woocommerce_before_checkout_shipping_form</code> / <code>woocommerce_after_checkout_shipping_form</code></li>
@@ -483,25 +493,25 @@ class MCRPD_Checkout_Settings {
 							</div>
 
 							<div class="mcrpd-docs-card">
-								<h3><?php esc_html_e( 'Frequently Asked Questions (FAQ)', 'mcod-minimalist-checkout' ); ?></h3>
+								<h3><?php esc_html_e( 'Frequently Asked Questions (FAQ)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 								<ul class="mcrpd-docs-faq">
 									<li>
-										<strong><?php esc_html_e( 'Why are my theme header and footer hidden on the checkout page?', 'mcod-minimalist-checkout' ); ?></strong>
-										<p><?php esc_html_e( 'This is the default distraction-free mode to increase conversion rates. You can re-enable your theme header and footer in the "Design & Settings" tab by checking "Use Theme Header/Footer".', 'mcod-minimalist-checkout' ); ?></p>
+										<strong><?php esc_html_e( 'Why are my theme header and footer hidden on the checkout page?', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong>
+										<p><?php esc_html_e( 'This is the default distraction-free mode to increase conversion rates. You can re-enable your theme header and footer in the "Design & Settings" tab by checking "Use Theme Header/Footer".', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 									</li>
 									<li>
-										<strong><?php esc_html_e( 'If I disable the header, will I lose my tracking pixels and analytics?', 'mcod-minimalist-checkout' ); ?></strong>
-										<p><?php esc_html_e( 'No! The "distraction-free" mode only hides the visual elements of the header and footer using CSS. The underlying WordPress <head> is still fully loaded. All your Facebook Pixels, Google Analytics, Tag Manager, and SEO meta tags will continue to work perfectly.', 'mcod-minimalist-checkout' ); ?></p>
+										<strong><?php esc_html_e( 'If I disable the header, will I lose my tracking pixels and analytics?', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong>
+										<p><?php esc_html_e( 'No! The "distraction-free" mode only hides the visual elements of the header and footer using CSS. The underlying WordPress <head> is still fully loaded. All your Facebook Pixels, Google Analytics, Tag Manager, and SEO meta tags will continue to work perfectly.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 									</li>
 									<li>
-										<strong><?php esc_html_e( 'How do I reorder checkout fields?', 'mcod-minimalist-checkout' ); ?></strong>
-										<p><?php esc_html_e( 'Go to the "Checkout Fields" tab and drag the fields using the handle icon on the left side of each row.', 'mcod-minimalist-checkout' ); ?></p>
+										<strong><?php esc_html_e( 'How do I reorder checkout fields?', 'mcod-minimalist-checkout-for-woocommerce' ); ?></strong>
+										<p><?php esc_html_e( 'Go to the "Checkout Fields" tab and drag the fields using the handle icon on the left side of each row.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 									</li>
 								</ul>
 							</div>
 							
 							<p style="margin-top: 30px; font-style: italic; color: #64748b; text-align: center;">
-								<?php esc_html_e( 'This plugin is in constant evolution. If you have ideas or suggestions, do not hesitate to contact me at hola@devcristian.com. Your collaboration is highly valued!', 'mcod-minimalist-checkout' ); ?>
+								<?php esc_html_e( 'This plugin is in constant evolution. If you have ideas or suggestions, do not hesitate to contact me at hola@devcristian.com. Your collaboration is highly valued!', 'mcod-minimalist-checkout-for-woocommerce' ); ?>
 							</p>
 						</div>
 					</div>
@@ -623,6 +633,6 @@ class MCRPD_Checkout_Settings {
 		$key   = $args['key'];
 		$value = $this->get_setting( $key, '' );
 		echo '<input type="text" class="regular-text" name="' . esc_attr( self::OPTION_NAME . '[' . $key . ']' ) . '" value="' . esc_attr( $value ) . '" style="margin-right:10px;" />';
-		echo '<button class="button mcrpd-media-upload">' . esc_html__( 'Upload Image', 'mcod-minimalist-checkout' ) . '</button>';
+		echo '<button class="button mcrpd-media-upload">' . esc_html__( 'Upload Image', 'mcod-minimalist-checkout-for-woocommerce' ) . '</button>';
 	}
 }

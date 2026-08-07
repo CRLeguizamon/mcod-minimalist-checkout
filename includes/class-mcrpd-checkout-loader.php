@@ -7,19 +7,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-class MCRPD_Checkout_Loader {
+class MCMCHK_Checkout_Loader {
 
 	/**
 	 * Singleton instance.
 	 *
-	 * @var MCRPD_Checkout_Loader|null
+	 * @var MCMCHK_Checkout_Loader|null
 	 */
 	private static $instance = null;
 
 	/**
 	 * Get active instance.
 	 *
-	 * @return MCRPD_Checkout_Loader
+	 * @return MCMCHK_Checkout_Loader
 	 */
 	public static function get_instance() {
 		if ( null === self::$instance ) {
@@ -55,17 +55,17 @@ class MCRPD_Checkout_Loader {
 		add_filter( 'woocommerce_checkout_fields', array( $this, 'customize_checkout_fields' ), PHP_INT_MAX );
 
 		// Register debug shortcode
-		add_shortcode( 'mcrpd_debug', array( $this, 'render_debug_shortcode' ) );
+		add_shortcode( 'mcmchk_debug', array( $this, 'render_debug_shortcode' ) );
 
 		// AJAX login handler for inline checkout login
-		add_action( 'wp_ajax_nopriv_mcrpd_ajax_login', array( $this, 'handle_ajax_login' ) );
+		add_action( 'wp_ajax_nopriv_mcmchk_ajax_login', array( $this, 'handle_ajax_login' ) );
 	}
 
 	/**
 	 * Register the Minimalist Checkout Page Template.
 	 */
 	public function register_page_template( $templates ) {
-		$templates['templates/minimalist-checkout-page.php'] = __( 'Minimalist Checkout', 'mcod-minimalist-checkout' );
+		$templates['templates/minimalist-checkout-page.php'] = __( 'Minimalist Checkout', 'mcod-minimalist-checkout-for-woocommerce' );
 		return $templates;
 	}
 
@@ -75,8 +75,14 @@ class MCRPD_Checkout_Loader {
 	public function load_page_template( $template ) {
 		if ( is_page() ) {
 			$meta_template = get_post_meta( get_the_ID(), '_wp_page_template', true );
-			if ( 'templates/minimalist-checkout-page.php' === $meta_template ) {
-				$plugin_template = MCRPD_TEMPLATES . 'minimalist-checkout-page.php';
+			
+			$settings         = get_option( 'mcmchk_settings', array() );
+			$force_template   = ! empty( $settings['force_template'] ) ? true : false;
+			$checkout_page_id = wc_get_page_id( 'checkout' );
+			$is_checkout_page = ( $checkout_page_id > 0 && (int) get_the_ID() === (int) $checkout_page_id );
+
+			if ( 'templates/minimalist-checkout-page.php' === $meta_template || ( $force_template && $is_checkout_page ) ) {
+				$plugin_template = MCMCHK_TEMPLATES . 'minimalist-checkout-page.php';
 				if ( file_exists( $plugin_template ) ) {
 					return $plugin_template;
 				}
@@ -91,9 +97,33 @@ class MCRPD_Checkout_Loader {
 	 * @return bool
 	 */
 	public static function is_minimalist_checkout() {
+		$checkout_page_id = wc_get_page_id( 'checkout' );
+		
+		// First check if the force_template setting is enabled
+		$settings = get_option( 'mcmchk_settings', array() );
+		$force_template = ! empty( $settings['force_template'] ) ? true : false;
+		
+		if ( $force_template ) {
+			// Ensure we only apply it if we are actually on the checkout page or an AJAX checkout request.
+			$is_checkout_context = false;
+			if ( function_exists( 'is_checkout' ) && is_checkout() ) {
+				$is_checkout_context = true;
+			} elseif ( function_exists( 'is_page' ) && is_page( $checkout_page_id ) && $checkout_page_id > 0 ) {
+				$is_checkout_context = true;
+			} elseif ( wp_doing_ajax() ) {
+				$wc_ajax = isset( $_GET['wc-ajax'] ) ? sanitize_text_field( wp_unslash( $_GET['wc-ajax'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				if ( in_array( $wc_ajax, array( 'update_order_review', 'checkout' ), true ) ) {
+					$is_checkout_context = true;
+				}
+			}
+			
+			if ( $is_checkout_context ) {
+				return true;
+			}
+		}
+
 		// Always check the WooCommerce checkout page ID setting to be robust against early calls
 		// from other plugins before the main query (is_page()) is fully initialized.
-		$checkout_page_id = wc_get_page_id( 'checkout' );
 		if ( $checkout_page_id > 0 ) {
 			$meta_template = get_post_meta( $checkout_page_id, '_wp_page_template', true );
 			if ( 'templates/minimalist-checkout-page.php' === $meta_template ) {
@@ -117,7 +147,7 @@ class MCRPD_Checkout_Loader {
 	 */
 	public function override_woocommerce_template( $template, $template_name, $template_path ) {
 		if ( self::is_minimalist_checkout() ) {
-			$custom_template = MCRPD_TEMPLATES . 'woocommerce/' . $template_name;
+			$custom_template = MCMCHK_TEMPLATES . 'woocommerce/' . $template_name;
 			if ( file_exists( $custom_template ) ) {
 				return $custom_template;
 			}
@@ -132,7 +162,7 @@ class MCRPD_Checkout_Loader {
 		if ( self::is_minimalist_checkout() ) {
 			$classes[] = 'mcrpd-shop-checkout-body';
 			
-			$settings = get_option( 'mcrpd_settings', array() );
+			$settings = get_option( 'mcmchk_settings', array() );
 			$use_theme_hf = ! empty( $settings['use_theme_hf'] ) ? true : false;
 			
 			if ( ! $use_theme_hf ) {
@@ -151,10 +181,10 @@ class MCRPD_Checkout_Loader {
 			wp_enqueue_style( 'mcrpd-google-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap', array(), '1.0.0' );
 			
 			// Enqueue local assets
-			wp_enqueue_style( 'mcrpd-checkout-css', MCRPD_ASSETS . 'css/mcrpd-checkout.css', array(), MCRPD_VERSION );
+			wp_enqueue_style( 'mcrpd-checkout-css', MCMCHK_ASSETS . 'css/mcrpd-checkout.css', array(), MCMCHK_VERSION );
 			
 			// Dynamic primary color CSS
-			$settings = get_option( 'mcrpd_settings', array() );
+			$settings = get_option( 'mcmchk_settings', array() );
 			$primary_color = ! empty( $settings['primary_color'] ) ? sanitize_hex_color( $settings['primary_color'] ) : '#1773b0';
 			$custom_css = "
 				.woocommerce-checkout input[type='text']:focus,
@@ -175,19 +205,19 @@ class MCRPD_Checkout_Loader {
 			";
 			wp_add_inline_style( 'mcrpd-checkout-css', $custom_css );
 
-			wp_enqueue_script( 'mcrpd-checkout-js', MCRPD_ASSETS . 'js/mcrpd-checkout.js', array( 'jquery' ), MCRPD_VERSION, true );
+			wp_enqueue_script( 'mcrpd-checkout-js', MCMCHK_ASSETS . 'js/mcrpd-checkout.js', array( 'jquery' ), MCMCHK_VERSION, true );
 
 			// Pass settings to our JavaScript
-			wp_localize_script( 'mcrpd-checkout-js', 'mcrpd_params', array(
+			wp_localize_script( 'mcrpd-checkout-js', 'mcmchk_params', array(
 				'ajax_url'            => admin_url( 'admin-ajax.php' ),
 				'wc_ajax_url'         => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 				'apply_coupon_nonce'  => wp_create_nonce( 'apply-coupon' ),
 				'remove_coupon_nonce' => wp_create_nonce( 'remove-coupon' ),
 				'login_nonce'         => wp_create_nonce( 'mcrpd-login-nonce' ),
-				'i18n_login_success'  => __( 'Login successful. Reloading...', 'mcod-minimalist-checkout' ),
-				'i18n_login_empty'    => __( 'Please enter your username and password.', 'mcod-minimalist-checkout' ),
-				'i18n_coupon_empty'   => __( 'Please enter a discount code.', 'mcod-minimalist-checkout' ),
-				'i18n_coupon_error'   => __( 'Error applying coupon. Please try again.', 'mcod-minimalist-checkout' ),
+				'i18n_login_success'  => __( 'Login successful. Reloading...', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_login_empty'    => __( 'Please enter your username and password.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_coupon_empty'   => __( 'Please enter a discount code.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_coupon_error'   => __( 'Error applying coupon. Please try again.', 'mcod-minimalist-checkout-for-woocommerce' ),
 			) );
 		}
 	}
@@ -219,7 +249,7 @@ class MCRPD_Checkout_Loader {
 		$password = isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
 		if ( empty( $username ) || empty( $password ) ) {
-			wp_send_json_error( array( 'message' => __( 'Please enter your username and password.', 'mcod-minimalist-checkout' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Please enter your username and password.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
 		}
 
 		$credentials = array(
@@ -234,7 +264,7 @@ class MCRPD_Checkout_Loader {
 			wp_send_json_error( array( 'message' => $user->get_error_message() ) );
 		}
 
-		wp_send_json_success( array( 'message' => __( 'Login successful. Reloading...', 'mcod-minimalist-checkout' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Login successful. Reloading...', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
 	}
 
 	/**
@@ -265,7 +295,7 @@ class MCRPD_Checkout_Loader {
 	 */
 	public function render_shipping_methods() {
 		if ( ! WC()->cart->needs_shipping() || ! WC()->cart->show_shipping() ) {
-			echo '<p class="mcrpd-no-shipping-required">' . esc_html__( 'No shipping required.', 'mcod-minimalist-checkout' ) . '</p>';
+			echo '<p class="mcrpd-no-shipping-required">' . esc_html__( 'No shipping required.', 'mcod-minimalist-checkout-for-woocommerce' ) . '</p>';
 			return;
 		}
 
@@ -275,11 +305,11 @@ class MCRPD_Checkout_Loader {
 			$available_methods = $package['rates'];
 			$chosen_method     = isset( WC()->session->chosen_shipping_methods[ $i ] ) ? WC()->session->chosen_shipping_methods[ $i ] : '';
 			$package_name      = apply_filters(
-				'woocommerce_shipping_package_name',
+				'mcmchk_shipping_package_name',
 				( $i + 1 > 1 )
 					// translators: %d represents the shipping package number.
-					? sprintf( _x( 'Shipping %d', 'shipping packages', 'mcod-minimalist-checkout' ), ( $i + 1 ) )
-					: _x( 'Shipping', 'shipping packages', 'mcod-minimalist-checkout' ),
+					? sprintf( _x( 'Shipping %d', 'shipping packages', 'mcod-minimalist-checkout-for-woocommerce' ), ( $i + 1 ) )
+					: _x( 'Shipping', 'shipping packages', 'mcod-minimalist-checkout-for-woocommerce' ),
 				$i,
 				$package
 			);
@@ -328,11 +358,11 @@ class MCRPD_Checkout_Loader {
 				echo '</ul>';
 			} else {
 				// No methods available for this package.
-				echo '<p class="mcrpd-no-shipping-available">' . wp_kses_post( apply_filters( 'woocommerce_no_shipping_available_html', __( 'No shipping options available. Please check your address or contact us.', 'mcod-minimalist-checkout' ) ) ) . '</p>';
+				echo '<p class="mcrpd-no-shipping-available">' . wp_kses_post( apply_filters( 'mcmchk_no_shipping_available_html', __( 'No shipping options available. Please check your address or contact us.', 'mcod-minimalist-checkout-for-woocommerce' ) ) ) . '</p>';
 			}
 
 			// Allow third-party plugins to hook after shipping methods.
-			do_action( 'woocommerce_after_shipping_rate', $method ?? null, $i );
+			do_action( 'mcmchk_after_shipping_rate', $method ?? null, $i );
 		}
 	}
 
@@ -344,32 +374,32 @@ class MCRPD_Checkout_Loader {
 			return $fields;
 		}
 
-		$settings        = get_option( 'mcrpd_settings', array() );
+		$settings        = get_option( 'mcmchk_settings', array() );
 		$field_overrides = isset( $settings['field_overrides'] ) ? $settings['field_overrides'] : array();
 
 		// Default placeholder fallbacks
 		$default_placeholders = array(
 			'billing' => array(
-				'billing_first_name' => __( 'First name', 'mcod-minimalist-checkout' ),
-				'billing_last_name'  => __( 'Last name', 'mcod-minimalist-checkout' ),
-				'billing_company'    => __( 'Company (optional)', 'mcod-minimalist-checkout' ),
-				'billing_address_1'  => __( 'Street address', 'mcod-minimalist-checkout' ),
-				'billing_address_2'  => __( 'Apartment, suite, unit, etc. (optional)', 'mcod-minimalist-checkout' ),
-				'billing_city'       => __( 'Town / City', 'mcod-minimalist-checkout' ),
-				'billing_postcode'   => __( 'Postcode / ZIP (optional)', 'mcod-minimalist-checkout' ),
-				'billing_phone'      => __( 'Phone', 'mcod-minimalist-checkout' ),
-				'billing_email'      => __( 'Email address', 'mcod-minimalist-checkout' ),
+				'billing_first_name' => __( 'First name', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'billing_last_name'  => __( 'Last name', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'billing_company'    => __( 'Company (optional)', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'billing_address_1'  => __( 'Street address', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'billing_address_2'  => __( 'Apartment, suite, unit, etc. (optional)', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'billing_city'       => __( 'Town / City', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'billing_postcode'   => __( 'Postcode / ZIP (optional)', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'billing_phone'      => __( 'Phone', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'billing_email'      => __( 'Email address', 'mcod-minimalist-checkout-for-woocommerce' ),
 			),
 			'shipping' => array(
-				'shipping_first_name' => __( 'First name', 'mcod-minimalist-checkout' ),
-				'shipping_last_name'  => __( 'Last name', 'mcod-minimalist-checkout' ),
-				'shipping_company'    => array( 'placeholder' => __( 'Company (optional)', 'mcod-minimalist-checkout' ) ),
-				'shipping_address_1'  => __( 'Street address', 'mcod-minimalist-checkout' ),
-				'shipping_address_2'  => __( 'Apartment, suite, unit, etc. (optional)', 'mcod-minimalist-checkout' ),
-				'shipping_city'       => __( 'Town / City', 'mcod-minimalist-checkout' ),
-				'shipping_postcode'   => __( 'Postcode / ZIP (optional)', 'mcod-minimalist-checkout' ),
-				'shipping_phone'      => __( 'Phone', 'mcod-minimalist-checkout' ),
-				'shipping_email'      => __( 'Email address', 'mcod-minimalist-checkout' ),
+				'shipping_first_name' => __( 'First name', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'shipping_last_name'  => __( 'Last name', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'shipping_company'    => array( 'placeholder' => __( 'Company (optional)', 'mcod-minimalist-checkout-for-woocommerce' ) ),
+				'shipping_address_1'  => __( 'Street address', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'shipping_address_2'  => __( 'Apartment, suite, unit, etc. (optional)', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'shipping_city'       => __( 'Town / City', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'shipping_postcode'   => __( 'Postcode / ZIP (optional)', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'shipping_phone'      => __( 'Phone', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'shipping_email'      => __( 'Email address', 'mcod-minimalist-checkout-for-woocommerce' ),
 			),
 		);
 
@@ -586,17 +616,17 @@ class MCRPD_Checkout_Loader {
 			</div>
 
 			<div style="margin-bottom: 20px;">
-				<h4 style="margin: 0 0 8px 0; color: #f1f5f9; font-size: 14px;">💾 Saved Options (mcrpd_settings)</h4>
+				<h4 style="margin: 0 0 8px 0; color: #f1f5f9; font-size: 14px;">💾 Saved Options (mcmchk_settings)</h4>
 				<div style="max-height: 200px; overflow-y: auto; background: #0f172a; padding: 10px; border-radius: 4px; border: 1px solid #1e293b; font-size: 11px;">
 					<pre style="margin: 0; color: #cbd5e1; white-space: pre-wrap;"><?php
 					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
-					echo esc_html( print_r( get_option( 'mcrpd_settings', array() ), true ) );
+					echo esc_html( print_r( get_option( 'mcmchk_settings', array() ), true ) );
 					?></pre>
 				</div>
 			</div>
 			
 			<div style="font-size: 11px; color: #64748b; border-top: 1px solid #334155; padding-top: 8px;">
-				<em>* This panel is only shown to administrator users. You can remove it by removing the [mcrpd_debug] shortcode from the checkout page.</em>
+				<em>* This panel is only shown to administrator users. You can remove it by removing the [mcmchk_debug] shortcode from the checkout page.</em>
 			</div>
 		</div>
 		<?php

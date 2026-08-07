@@ -25,18 +25,40 @@ body.mcrpd-shop-checkout-body {
 /* ==========================================================================
    2. Grid Layout & Structural Columns
    ========================================================================== */
+/* Enforce strict layout on main form and sections to prevent theme conflicts */
+form.woocommerce-checkout,
+#customer_details,
+.woocommerce-billing-fields,
+.woocommerce-shipping-fields,
+.mcrpd-billing-fields-wrap,
+.mcrpd-shipping-fields-wrap,
+.mcrpd-checkout-section,
+.mcrpd-contact-section {
+	display: flex !important;
+	flex-direction: column !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
+	clear: both !important;
+}
+
 .mcrpd-shop-checkout-wrap {
 	display: flex;
 	flex-wrap: wrap;
 	min-height: 100vh;
 	box-sizing: border-box;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+.mcrpd-checkout-main-content>.woocommerce {
+	margin: auto;
 }
 
 /* Left Column: Form & Fields */
 .mcrpd-shop-checkout-left {
 	flex: 1 1 55%;
 	max-width: 55%;
-	padding: 40px 60px 40px 20px;
+	padding: 20px 20px 20px 0px;
 	background-color: #ffffff;
 	box-sizing: border-box;
 }
@@ -47,8 +69,18 @@ body.mcrpd-shop-checkout-body {
 	max-width: 45%;
 	padding: 30px;
 	background-color: #f5f5f5;
-	border-left: 1px solid #e1e1e1;
+	border: 1px solid #e1e1e1;
 	box-sizing: border-box;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+}
+
+/* Right Column: clean styles */
+
+.mcrpd-shop-checkout-right .woocommerce-checkout-review-order {
+	width: 100% !important;
+	background: #fff0 !important;
 }
 
 /* Brand Header */
@@ -198,9 +230,12 @@ body.mcrpd-shop-checkout-body {
 .woocommerce-shipping-fields__field-wrapper,
 .woocommerce-shipping-fields__field-wrapper-custom,
 .woocommerce-address-fields__field-wrapper {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12px;
+	display: flex !important;
+	flex-wrap: wrap !important;
+	gap: 12px !important;
+	margin: 0 !important;
+	width: 100% !important;
+	box-sizing: border-box !important;
 }
 
 .woocommerce-billing-fields__field-wrapper p.form-row,
@@ -512,12 +547,12 @@ ul.mcrpd-shipping-methods-list li label .woocommerce-Price-amount {
 
 .woocommerce-checkout textarea,
 .woocommerce-checkout textarea.input-text {
-	background-color: #ffffff;
-	border: 1px solid #d9d9d9;
-	border-radius: 5px;
+	background-color: #ffffff !important;
+	border: 1px solid #d9d9d9 !important;
+	border-radius: 5px !important;
 	padding: 12px 14px !important;
 	font-size: 14px;
-	color: #333333;
+	color: #333333 !important;
 	outline: none;
 	width: 100%;
 	min-height: 80px;
@@ -1307,18 +1342,18 @@ body.mcrpd-distraction-free footer.mcrpd-checkout-footer-links {
 .woocommerce-checkout .mcrpd-input-select,
 .woocommerce-checkout .mcrpd-input-textarea,
 .woocommerce-checkout input.input-text {
-	background-color: #ffffff;
-	border: 1px solid #d9d9d9;
-	border-radius: 5px;
+	background-color: #ffffff !important;
+	border: 1px solid #d9d9d9 !important;
+	border-radius: 5px !important;
 	padding: 12px 14px !important;
 	font-size: 14px;
-	color: #333333;
+	color: #333333 !important;
 	outline: none;
-	width: 100%;
+	width: 100% !important;
 	height: 48px !important;
 	box-shadow: none;
 	transition: border-color 0.2s ease, box-shadow 0.2s ease;
-	box-sizing: border-box;
+	box-sizing: border-box !important;
 }
 
 .woocommerce-checkout .mcrpd-input:focus,

@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 ?>
 <?php
-$settings                           = get_option( 'mcrpd_settings', array() );
+$settings                           = get_option( 'mcmchk_settings', array() );
 $disable_different_shipping_address = ! empty( $settings['disable_different_shipping_address'] );
 $ship_to_different_checked          = $disable_different_shipping_address ? false : (bool) apply_filters( 'woocommerce_ship_to_different_address_checked', 'shipping' === get_option( 'woocommerce_ship_to_destination' ) ? 1 : 0 );
 ?>
@@ -25,28 +25,31 @@ $ship_to_different_checked          = $disable_different_shipping_address ? fals
 	<!-- Choice of shipping address (Only if shipping is required) -->
 	<?php if ( true === WC()->cart->needs_shipping_address() && ! $disable_different_shipping_address ) : ?>
 		<div class="mcrpd-checkout-section mcrpd-shipping-selector-section">
-			<h3 class="mcrpd-section-title"><?php esc_html_e( 'Shipping address', 'mcod-minimalist-checkout' ); ?></h3>
+			<h3 class="mcrpd-section-title"><?php esc_html_e( 'Shipping address', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 			<div class="mcrpd-shipping-selector-group">
 				<label class="mcrpd-shipping-radio-label <?php echo ! $ship_to_different_checked ? 'selected' : ''; ?>">
-					<input type="radio" name="mcrpd_shipping_different" value="no" <?php checked( ! $ship_to_different_checked ); ?> />
-					<span class="mcrpd-radio-text"><?php esc_html_e( 'Same as billing address', 'mcod-minimalist-checkout' ); ?></span>
+					<input type="radio" name="mcmchk_shipping_different" value="no" <?php checked( ! $ship_to_different_checked ); ?> />
+					<span class="mcrpd-radio-text"><?php esc_html_e( 'Same as billing address', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
 				</label>
 				<label class="mcrpd-shipping-radio-label <?php echo $ship_to_different_checked ? 'selected' : ''; ?>">
-					<input type="radio" name="mcrpd_shipping_different" value="yes" <?php checked( $ship_to_different_checked ); ?> />
-					<span class="mcrpd-radio-text"><?php esc_html_e( 'Use a different shipping address', 'mcod-minimalist-checkout' ); ?></span>
+					<input type="radio" name="mcmchk_shipping_different" value="yes" <?php checked( $ship_to_different_checked ); ?> />
+					<span class="mcrpd-radio-text"><?php esc_html_e( 'Use a different shipping address', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
 				</label>
 			</div>
 			
 			<!-- Native checkbox (hidden, controlled by radios) -->
 			<input type="checkbox" id="ship-to-different-address-checkbox" class="input-checkbox" name="ship_to_different_address" value="1" <?php checked( $ship_to_different_checked ); ?> style="display: none !important;" />
 		</div>
+	<?php else : ?>
+		<!-- Fallback native checkbox when disabled, to prevent WooCommerce checkout.js from breaking -->
+		<input type="checkbox" id="ship-to-different-address-checkbox" class="input-checkbox" name="ship_to_different_address" value="1" style="display: none !important;" />
 	<?php endif; ?>
 
 	<!-- Shipping address wrapper -->
-	<div class="shipping_address" style="<?php echo $ship_to_different_checked ? 'display: block;' : 'display: none;'; ?>">
+	<div class="shipping_address" style="<?php echo $ship_to_different_checked ? 'display: block;' : 'display: none !important;'; ?>">
 		<!-- Primary Delivery / Shipping section -->
 		<div class="mcrpd-checkout-section mcrpd-delivery-section">
-			<h3 class="mcrpd-section-title"><?php esc_html_e( 'Delivery', 'mcod-minimalist-checkout' ); ?></h3>
+			<h3 class="mcrpd-section-title"><?php esc_html_e( 'Delivery', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 
 			<?php do_action( 'woocommerce_before_checkout_shipping_form', $checkout ); ?>
 
@@ -86,7 +89,7 @@ $ship_to_different_checked          = $disable_different_shipping_address ? fals
 		<?php if ( $has_order_fields || apply_filters( 'woocommerce_enable_order_notes_field', 'yes' === get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) : ?>
 			
 			<?php if ( ! WC()->cart->needs_shipping() || wc_ship_to_billing_address_only() ) : ?>
-				<h3 class="mcrpd-section-title"><?php esc_html_e( 'Additional information', 'mcod-minimalist-checkout' ); ?></h3>
+				<h3 class="mcrpd-section-title"><?php esc_html_e( 'Additional information', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 			<?php endif; ?>
 
 			<?php if ( $has_order_fields ) : ?>

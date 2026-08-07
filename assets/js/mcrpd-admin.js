@@ -76,7 +76,7 @@
 				});
 			});
 
-			$('#mcrpd_field_overrides_json').val(JSON.stringify(fieldData));
+			$('#mcmchk_field_overrides_json').val(JSON.stringify(fieldData));
 			console.log('Minimalist Checkout: Updated JSON overrides field: ', fieldData);
 		}
 
@@ -137,8 +137,8 @@
 			}
 
 			// Clear the hidden JSON field and set reset flag
-			$('#mcrpd_field_overrides_json').val('{}');
-			$('#mcrpd_reset_fields_flag').val('1');
+			$('#mcmchk_field_overrides_json').val('{}');
+			$('#mcmchk_reset_fields_flag').val('1');
 
 			// Submit form
 			$(this).closest('form').submit();
