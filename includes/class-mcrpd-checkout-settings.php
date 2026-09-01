@@ -132,6 +132,7 @@ class MCMCHK_Checkout_Settings {
 		add_settings_field( 'hide_labels', __( 'Hide Field Labels', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'hide_labels', 'desc' => __( 'Hide labels above checkout fields for a cleaner design (shop style) and use placeholders only. (Enabled by default)', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
 		add_settings_field( 'disable_different_shipping_address', __( 'Disable "Use a different shipping address" button', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'disable_different_shipping_address', 'desc' => __( 'Always use the billing address as the shipping address and hide the shipping address selector.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
 		add_settings_field( 'disable_coupon', __( 'Disable Coupon Field', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'disable_coupon', 'desc' => __( 'Hide the discount code field on the checkout page.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+		add_settings_field( 'enable_digital_mode', __( 'Enable digital products mode', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'enable_digital_mode', 'desc' => __( 'Hides the shipping methods section and changes shipping label to "Instant digital".', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
 
 		// Branding Section
 		add_settings_section( 'mcmchk_branding_section', __( 'Branding', 'mcod-minimalist-checkout-for-woocommerce' ), null, 'mcrpd-checkout-settings' );
@@ -182,6 +183,7 @@ class MCMCHK_Checkout_Settings {
 		$output['hide_brand_header'] = isset( $input['hide_brand_header'] ) ? '1' : '0';
 		$output['disable_different_shipping_address'] = isset( $input['disable_different_shipping_address'] ) ? '1' : '0';
 		$output['disable_coupon']    = isset( $input['disable_coupon'] ) ? '1' : '0';
+		$output['enable_digital_mode'] = isset( $input['enable_digital_mode'] ) ? '1' : '0';
 		$output['primary_color']     = isset( $input['primary_color'] ) ? sanitize_hex_color( $input['primary_color'] ) : '#1773b0';
 		$output['brand_logo']        = isset( $input['brand_logo'] ) ? esc_url_raw( $input['brand_logo'] ) : '';
 		$output['brand_logo_width']  = isset( $input['brand_logo_width'] ) ? absint( $input['brand_logo_width'] ) : 125;

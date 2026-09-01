@@ -100,31 +100,37 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<span class="mcrpd-totals-label"><?php esc_html_e( 'Shipping', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
 			<span class="mcrpd-totals-value">
 				<?php
-				if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) {
-					$packages = WC()->shipping()->get_packages();
-					$shipping_total = 0;
-					$shipping_label = '';
-					
-					foreach ( $packages as $i => $package ) {
-						$chosen_method = isset( WC()->session->chosen_shipping_methods[ $i ] ) ? WC()->session->chosen_shipping_methods[ $i ] : '';
-						if ( $chosen_method && isset( $package['rates'][ $chosen_method ] ) ) {
-							$rate = $package['rates'][ $chosen_method ];
-							$shipping_total += $rate->cost;
-							$shipping_label = $rate->label;
-						}
-					}
-					
-					if ( $shipping_total > 0 ) {
-						echo wp_kses_post( wc_price( $shipping_total ) );
-					} else {
-						if ( $shipping_label ) {
-							echo esc_html( $shipping_label );
-						} else {
-							esc_html_e( 'Free', 'mcod-minimalist-checkout-for-woocommerce' );
-						}
-					}
+				$digital_mode = isset( $mcmchk_settings['enable_digital_mode'] ) ? $mcmchk_settings['enable_digital_mode'] : '0';
+				
+				if ( '1' === $digital_mode ) {
+					esc_html_e( 'Instant digital', 'mcod-minimalist-checkout-for-woocommerce' );
 				} else {
-					esc_html_e( 'Free', 'mcod-minimalist-checkout-for-woocommerce' );
+					if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) {
+						$packages = WC()->shipping()->get_packages();
+						$shipping_total = 0;
+						$shipping_label = '';
+						
+						foreach ( $packages as $i => $package ) {
+							$chosen_method = isset( WC()->session->chosen_shipping_methods[ $i ] ) ? WC()->session->chosen_shipping_methods[ $i ] : '';
+							if ( $chosen_method && isset( $package['rates'][ $chosen_method ] ) ) {
+								$rate = $package['rates'][ $chosen_method ];
+								$shipping_total += $rate->cost;
+								$shipping_label = $rate->label;
+							}
+						}
+						
+						if ( $shipping_total > 0 ) {
+							echo wp_kses_post( wc_price( $shipping_total ) );
+						} else {
+							if ( $shipping_label ) {
+								echo esc_html( $shipping_label );
+							} else {
+								esc_html_e( 'Free', 'mcod-minimalist-checkout-for-woocommerce' );
+							}
+						}
+					} else {
+						esc_html_e( 'Free', 'mcod-minimalist-checkout-for-woocommerce' );
+					}
 				}
 				?>
 			</span>

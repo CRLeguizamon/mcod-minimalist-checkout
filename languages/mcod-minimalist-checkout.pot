@@ -563,3 +563,41 @@ msgstr ""
 #: includes/class-mcrpd-checkout-settings.php:481
 msgid "Action fired after each shipping rate is rendered."
 msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:135
+msgid "Enable digital products mode"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:135
+msgid "Hides the shipping methods section and changes shipping label to \"Instant digital\"."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:154
+msgid "Subscription Texts"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:160
+msgid "Recurring Payment Block"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:166
+msgid "Customize the recurring payment block shown in the checkout sidebar. Leave empty to use the default WooCommerce Subscriptions output. Use the variables listed below."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:699
+msgid "Customize the recurring payment block displayed in the checkout sidebar for subscription products. Use variables like {{recurring_total}}, {{period}}, etc. See the \"Compatibility & Help\" tab for the full variable reference."
+msgstr ""
+
+#: templates/woocommerce/checkout/review-order.php:106
+msgid "Instant digital"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:634
+msgctxt "billing period"
+msgid "%1$d %2$s"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:647
+msgctxt "trial period"
+msgid "%1$d %2$s"
+msgstr ""

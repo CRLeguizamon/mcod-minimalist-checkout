@@ -73,12 +73,18 @@ $hide_labels = ! isset( $settings['hide_labels'] ) || '1' === $settings['hide_la
 			<?php do_action( 'woocommerce_checkout_after_customer_details' ); ?>
 
 			<!-- Shipping Methods Section -->
+			<?php
+			$mcmchk_settings = get_option( 'mcmchk_settings', array() );
+			$digital_mode    = isset( $mcmchk_settings['enable_digital_mode'] ) ? $mcmchk_settings['enable_digital_mode'] : '0';
+			if ( '1' !== $digital_mode ) :
+			?>
 			<div class="mcrpd-checkout-section mcrpd-shipping-methods-section">
 				<h3 class="mcrpd-section-title"><?php esc_html_e( 'Shipping methods', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 				<div id="mcrpd-checkout-shipping-methods">
 					<?php MCMCHK_Checkout_Loader::get_instance()->render_shipping_methods(); ?>
 				</div>
 			</div>
+			<?php endif; ?>
 
 			<!-- Payment Gateways Section -->
 			<div class="mcrpd-checkout-section mcrpd-payment-section">
