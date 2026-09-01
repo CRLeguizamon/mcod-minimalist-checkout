@@ -146,6 +146,28 @@ class MCMCHK_Checkout_Settings {
 		add_settings_field( 'link_privacy', __( 'Privacy Policy Link', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcmchk_footer_section', array( 'key' => 'link_privacy' ) );
 		add_settings_field( 'link_terms', __( 'Terms of Service Link', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcmchk_footer_section', array( 'key' => 'link_terms' ) );
 		add_settings_field( 'link_contact', __( 'Contact Link', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_text_field' ), 'mcrpd-checkout-settings', 'mcmchk_footer_section', array( 'key' => 'link_contact' ) );
+
+		// Subscription Texts Section (only registered if WooCommerce Subscriptions is active)
+		if ( class_exists( 'WC_Subscriptions' ) ) {
+			add_settings_section(
+				'mcmchk_subscription_section',
+				__( 'Subscription Texts', 'mcod-minimalist-checkout-for-woocommerce' ),
+				array( $this, 'render_subscription_section_description' ),
+				'mcrpd-checkout-settings'
+			);
+			add_settings_field(
+				'subscription_recurring_template',
+				__( 'Recurring Payment Block', 'mcod-minimalist-checkout-for-woocommerce' ),
+				array( $this, 'render_textarea_field' ),
+				'mcrpd-checkout-settings',
+				'mcmchk_subscription_section',
+				array(
+					'key'  => 'subscription_recurring_template',
+					'desc' => __( 'Customize the recurring payment block shown in the checkout sidebar. Leave empty to use the default WooCommerce Subscriptions output. Use the variables listed below.', 'mcod-minimalist-checkout-for-woocommerce' ),
+					'rows' => 8,
+				)
+			);
+		}
 	}
 
 	/**
@@ -168,6 +190,11 @@ class MCMCHK_Checkout_Settings {
 		$output['link_privacy']      = isset( $input['link_privacy'] ) ? esc_url_raw( $input['link_privacy'] ) : '';
 		$output['link_terms']        = isset( $input['link_terms'] ) ? esc_url_raw( $input['link_terms'] ) : '';
 		$output['link_contact']      = isset( $input['link_contact'] ) ? esc_url_raw( $input['link_contact'] ) : '';
+
+		// Subscription recurring template — only saved when WooCommerce Subscriptions is active.
+		if ( class_exists( 'WC_Subscriptions' ) && isset( $input['subscription_recurring_template'] ) ) {
+			$output['subscription_recurring_template'] = wp_kses_post( wp_unslash( $input['subscription_recurring_template'] ) );
+		}
 
 		// Handle field overrides
 		if ( ! empty( $input['reset_fields_flag'] ) && '1' === $input['reset_fields_flag'] ) {
@@ -492,6 +519,34 @@ class MCMCHK_Checkout_Settings {
 								</ul>
 							</div>
 
+							<?php if ( class_exists( 'WC_Subscriptions' ) ) : ?>
+							<div class="mcrpd-docs-card">
+								<h3><?php esc_html_e( 'Subscription Text Variables', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
+								<p><?php esc_html_e( 'Use these variables in the "Recurring Payment Block" textarea (Design & Settings tab). They will be replaced with live values from the cart.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
+								<table class="mcrpd-docs-table">
+									<thead>
+										<tr>
+											<th><?php esc_html_e( 'Variable', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
+											<th><?php esc_html_e( 'Description', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
+											<th><?php esc_html_e( 'Example output', 'mcod-minimalist-checkout-for-woocommerce' ); ?></th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr><td><code>{{recurring_subtotal}}</code></td><td><?php esc_html_e( 'Subtotal of the recurring cart (formatted price)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td><td>$13</td></tr>
+										<tr><td><code>{{recurring_total}}</code></td><td><?php esc_html_e( 'Total of the recurring payment (formatted price)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td><td>$13</td></tr>
+										<tr><td><code>{{period}}</code></td><td><?php esc_html_e( 'Billing period label', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td><td><?php esc_html_e( '1 month', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td></tr>
+										<tr><td><code>{{interval}}</code></td><td><?php esc_html_e( 'Billing interval number', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td><td>1</td></tr>
+										<tr><td><code>{{period_name}}</code></td><td><?php esc_html_e( 'Period name only (singular)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td><td><?php esc_html_e( 'month', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td></tr>
+										<tr><td><code>{{first_renewal_date}}</code></td><td><?php esc_html_e( 'Date of the first renewal payment', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td><td><?php esc_html_e( 'October 1, 2026', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td></tr>
+										<tr><td><code>{{sign_up_fee}}</code></td><td><?php esc_html_e( 'Sign-up / enrollment fee (formatted price)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td><td>$0</td></tr>
+										<tr><td><code>{{trial_period}}</code></td><td><?php esc_html_e( 'Free trial period string (empty if no trial)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td><td><?php esc_html_e( '7 days', 'mcod-minimalist-checkout-for-woocommerce' ); ?></td></tr>
+									</tbody>
+								</table>
+								<h4 style="margin-top:15px;"><?php esc_html_e( 'Example template:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h4>
+								<pre style="background:#f0f0f1;padding:10px;border-radius:4px;font-size:12px;white-space:pre-wrap;"><?php echo esc_html( "<div class=\"mcrpd-subscription-block\">\n  <p class=\"mcrpd-sub-title\">Recurring payment</p>\n  <div class=\"mcrpd-sub-row\">\n    <span>Subtotal</span><span>{{recurring_subtotal}} for {{period}}</span>\n  </div>\n  <div class=\"mcrpd-sub-row mcrpd-sub-total\">\n    <span>Recurring payment</span><span><strong>{{recurring_total}}</strong> for {{period}}</span>\n  </div>\n  <small>First renewal: {{first_renewal_date}}</small>\n</div>" ); ?></pre>
+							</div>
+							<?php endif; ?>
+
 							<div class="mcrpd-docs-card">
 								<h3><?php esc_html_e( 'Frequently Asked Questions (FAQ)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 								<ul class="mcrpd-docs-faq">
@@ -620,6 +675,28 @@ class MCMCHK_Checkout_Settings {
 		if ( ! empty( $args['desc'] ) ) {
 			echo '<p class="description">' . esc_html( $args['desc'] ) . '</p>';
 		}
+	}
+
+	/**
+	 * Render a textarea settings field.
+	 *
+	 * @param array $args Field arguments: key, desc, rows.
+	 */
+	public function render_textarea_field( $args ) {
+		$key   = $args['key'];
+		$value = $this->get_setting( $key, '' );
+		$rows  = isset( $args['rows'] ) ? absint( $args['rows'] ) : 6;
+		echo '<textarea class="large-text" name="' . esc_attr( self::OPTION_NAME . '[' . $key . ']' ) . '" rows="' . esc_attr( $rows ) . '" style="font-family:monospace;font-size:13px;">' . esc_textarea( $value ) . '</textarea>';
+		if ( ! empty( $args['desc'] ) ) {
+			echo '<p class="description">' . esc_html( $args['desc'] ) . '</p>';
+		}
+	}
+
+	/**
+	 * Render the description for the Subscription Texts settings section.
+	 */
+	public function render_subscription_section_description() {
+		echo '<p>' . esc_html__( 'Customize the recurring payment block displayed in the checkout sidebar for subscription products. Use variables like {{recurring_total}}, {{period}}, etc. See the "Compatibility & Help" tab for the full variable reference.', 'mcod-minimalist-checkout-for-woocommerce' ) . '</p>';
 	}
 
 	public function render_color_field( $args ) {

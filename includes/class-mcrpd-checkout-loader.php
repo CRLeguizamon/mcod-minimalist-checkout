@@ -59,6 +59,14 @@ class MCMCHK_Checkout_Loader {
 
 		// AJAX login handler for inline checkout login
 		add_action( 'wp_ajax_nopriv_mcmchk_ajax_login', array( $this, 'handle_ajax_login' ) );
+
+		// WooCommerce Subscriptions: intercept the recurring totals block when a custom template is set.
+		// 'wp' fires on normal page loads; 'woocommerce_checkout_update_order_review' fires during AJAX
+		// checkout fragment refreshes so both paths are covered.
+		if ( class_exists( 'WC_Subscriptions' ) ) {
+			add_action( 'wp', array( $this, 'mcmchk_setup_subscription_hooks' ), 20 );
+			add_action( 'woocommerce_checkout_update_order_review', array( $this, 'mcmchk_setup_subscription_hooks' ), 5 );
+		}
 	}
 
 	/**
@@ -490,6 +498,180 @@ class MCMCHK_Checkout_Loader {
 		}
 
 		return $fields;
+	}
+
+	/**
+	 * Set up WooCommerce Subscriptions recurring totals interception.
+	 *
+	 * Called on 'wp' hook (priority 20) to ensure WCS has already registered its
+	 * display_recurring_totals action. Removes WCS's default output and replaces
+	 * it with our custom template renderer — but only when a template is saved.
+	 */
+	public function mcmchk_setup_subscription_hooks() {
+		$settings = get_option( 'mcmchk_settings', array() );
+		$template = isset( $settings['subscription_recurring_template'] ) ? trim( $settings['subscription_recurring_template'] ) : '';
+
+		if ( empty( $template ) ) {
+			return; // Nothing to do: keep WCS default output.
+		}
+
+		// Remove WooCommerce Subscriptions' default recurring totals renderer.
+		// WCS registers this on 'woocommerce_review_order_after_order_total' at priority 10.
+		remove_action( 'woocommerce_review_order_after_order_total', array( 'WC_Subscriptions_Cart', 'display_recurring_totals' ), 10 );
+
+		// Add our custom renderer at the same priority.
+		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'mcmchk_display_custom_recurring_totals' ), 10 );
+	}
+
+	/**
+	 * Render the custom recurring totals block with variables resolved.
+	 *
+	 * Only called when a template is saved (set up by mcmchk_setup_subscription_hooks).
+	 * If the cart has no subscriptions the block is simply not rendered.
+	 */
+	public function mcmchk_display_custom_recurring_totals() {
+		// Guard: only render when there are recurring carts.
+		if ( ! isset( WC()->cart ) || empty( WC()->cart->recurring_carts ) ) {
+			return;
+		}
+
+		$settings = get_option( 'mcmchk_settings', array() );
+		$template = isset( $settings['subscription_recurring_template'] ) ? trim( $settings['subscription_recurring_template'] ) : '';
+
+		if ( empty( $template ) ) {
+			return;
+		}
+
+		$vars   = $this->mcmchk_get_recurring_cart_vars();
+		$keys   = array_map(
+			function( $k ) { return '{{' . $k . '}}'; },
+			array_keys( $vars )
+		);
+		$values = array_values( $vars );
+
+		// Output the resolved template (wp_kses_post was already applied on save).
+		echo wp_kses_post( str_replace( $keys, $values, $template ) );
+	}
+
+	/**
+	 * Build a map of {{variable}} => resolved value from the recurring cart.
+	 *
+	 * Iterates over all recurring carts provided by WooCommerce Subscriptions
+	 * and pulls billing/period data from the first one found.
+	 *
+	 * @return array Associative array of variable name => resolved string.
+	 */
+	private function mcmchk_get_recurring_cart_vars() {
+		$vars = array(
+			'recurring_subtotal' => '',
+			'recurring_total'    => '',
+			'period'             => '',
+			'interval'           => '',
+			'period_name'        => '',
+			'first_renewal_date' => '',
+			'sign_up_fee'        => '',
+			'trial_period'       => '',
+		);
+
+		// WooCommerce Subscriptions exposes recurring carts via WC()->cart->recurring_carts
+		if ( ! isset( WC()->cart ) || ! isset( WC()->cart->recurring_carts ) ) {
+			return $vars;
+		}
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+			// Formatted subtotal and total
+			$vars['recurring_subtotal'] = wp_kses_post( wc_price( $recurring_cart->get_subtotal() ) );
+			$vars['recurring_total']    = wp_kses_post( wc_price( $recurring_cart->get_total( 'edit' ) ) );
+
+			// Pull subscription period data from the first subscription product in this recurring cart
+			foreach ( $recurring_cart->get_cart() as $cart_item ) {
+				$product = isset( $cart_item['data'] ) ? $cart_item['data'] : null;
+
+				if ( ! $product || ! is_a( $product, 'WC_Product' ) ) {
+					continue;
+				}
+
+				// Resolve interval and period (works on subscription products)
+				if ( method_exists( $product, 'get_meta' ) ) {
+					$interval    = (int) $product->get_meta( '_subscription_period_interval' );
+					$period_key  = $product->get_meta( '_subscription_period' );
+				} else {
+					$interval   = 0;
+					$period_key = '';
+				}
+
+				// Fallback: read from post meta directly
+				if ( empty( $interval ) && $product->get_id() ) {
+					$interval   = (int) get_post_meta( $product->get_id(), '_subscription_period_interval', true );
+					$period_key = get_post_meta( $product->get_id(), '_subscription_period', true );
+				}
+
+				if ( empty( $period_key ) ) {
+					continue;
+				}
+
+				$interval = max( 1, $interval );
+
+				// WC_Subscriptions_Product::get_period_strings() returns singular/plural labels
+				if ( function_exists( 'wcs_get_subscription_period_strings' ) ) {
+					$period_strings = wcs_get_subscription_period_strings( $interval, $period_key );
+					// Returns a formatted string like "1 month" or "3 months"
+					$period_label = $period_strings;
+				} elseif ( class_exists( 'WC_Subscriptions_Product' ) && method_exists( 'WC_Subscriptions_Product', 'get_period_strings' ) ) {
+					$period_strings = WC_Subscriptions_Product::get_period_strings( $interval, $period_key );
+					$period_label   = is_array( $period_strings ) ? ( 1 === $interval ? $period_strings['singular'] : $period_strings['plural'] ) : $period_strings;
+				} else {
+					$period_label = $interval . ' ' . $period_key;
+				}
+
+				$vars['interval']    = esc_html( (string) $interval );
+				$vars['period_name'] = esc_html( sanitize_key( $period_key ) );
+
+				if ( is_string( $period_label ) && '' !== $period_label ) {
+					$vars['period'] = esc_html( $period_label );
+				} else {
+					/* translators: 1: billing interval number, 2: billing period (month, year, etc.) */
+					$vars['period'] = esc_html( sprintf( _x( '%1$d %2$s', 'billing period', 'mcod-minimalist-checkout-for-woocommerce' ), $interval, $period_key ) );
+				}
+
+				// Sign-up fee
+				$sign_up_fee = method_exists( $product, 'get_meta' )
+					? (float) $product->get_meta( '_subscription_sign_up_fee' )
+					: (float) get_post_meta( $product->get_id(), '_subscription_sign_up_fee', true );
+				$vars['sign_up_fee'] = wp_kses_post( wc_price( $sign_up_fee ) );
+
+				// Trial period
+				$trial_length = method_exists( $product, 'get_meta' )
+					? (int) $product->get_meta( '_subscription_trial_length' )
+					: (int) get_post_meta( $product->get_id(), '_subscription_trial_length', true );
+				$trial_period_key = sanitize_key(
+					method_exists( $product, 'get_meta' )
+						? (string) $product->get_meta( '_subscription_trial_period' )
+						: (string) get_post_meta( $product->get_id(), '_subscription_trial_period', true )
+				);
+
+				if ( $trial_length > 0 && ! empty( $trial_period_key ) ) {
+					/* translators: 1: trial length number, 2: trial period (day, week, month, year) */
+					$vars['trial_period'] = esc_html( sprintf( _x( '%1$d %2$s', 'trial period', 'mcod-minimalist-checkout-for-woocommerce' ), $trial_length, $trial_period_key ) );
+				}
+
+				// Only process the first subscription product
+				break;
+			}
+
+			// First renewal date: use WCS helper if available
+			if ( function_exists( 'wcs_cart_calculate_next_payment_date' ) ) {
+				$next_ts = wcs_cart_calculate_next_payment_date( $recurring_cart );
+				if ( $next_ts ) {
+					$vars['first_renewal_date'] = esc_html( date_i18n( wc_date_format(), $next_ts ) );
+				}
+			}
+
+			// Only process the first recurring cart
+			break;
+		}
+
+		return $vars;
 	}
 
 	/**
