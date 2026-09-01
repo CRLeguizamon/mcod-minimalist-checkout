@@ -289,7 +289,7 @@ form.woocommerce-checkout,
 .woocommerce-checkout input[type="tel"] {
 	background-color: #ffffff;
 	border: 1px solid #d9d9d9;
-	border-radius: 5px;
+	border-radius: 5px !important;
 	padding: 12px 14px !important;
 	font-size: 14px;
 	color: #333333;
@@ -1102,6 +1102,11 @@ body.woocommerce-order-received .woocommerce-notice {
 
 /*WooCommerce Payment Method Clean*/
 
+fieldset#wc-stripe-upe-form {
+	border: 0px;
+	padding: 0;
+}
+
 .woocommerce-checkout #payment ul.payment_methods {
 	background: #fff;
 	border: 0px;
@@ -1113,7 +1118,7 @@ body.woocommerce-order-received .woocommerce-notice {
 }
 
 .woocommerce-checkout #payment div.payment_box {
-	padding: 10px !important;
+	padding: 5px !important;
 	background-color: #fff0 !important;
 	margin: 0 !important;
 	border: 0px !important;
