@@ -342,7 +342,7 @@ p.form-row label {
 .mcrpd-hide-labels .woocommerce-shipping-fields__field-wrapper label,
 .mcrpd-hide-labels .woocommerce-address-fields__field-wrapper label,
 .mcrpd-hide-labels .mcrpd-contact-fields label,
-.mcrpd-hide-labels p.form-row:not(#billing_country_field):not(#shipping_country_field):not(#billing_state_field):not(#shipping_state_field) label {
+.mcrpd-hide-labels p.form-row:not(#billing_country_field):not(#shipping_country_field):not(#billing_state_field):not(#shipping_state_field):not(.woocommerce-SavedPaymentMethods-saveNew) label {
 	display: none !important;
 }
 
@@ -574,9 +574,7 @@ ul.mcrpd-shipping-methods-list li label .woocommerce-Price-amount {
    6. Payment Methods & CTA Styling
    ========================================================================== */
 .mcrpd-payment-section {
-	border: 1px solid #e1e1e1;
 	border-radius: 6px;
-	padding: 20px;
 	background-color: #ffffff;
 }
 
@@ -598,7 +596,7 @@ ul.mcrpd-shipping-methods-list li label .woocommerce-Price-amount {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 15px;
+	padding: 10px 15px;
 	font-size: 14px;
 	font-weight: 500;
 	color: #333333;
@@ -1107,6 +1105,32 @@ fieldset#wc-stripe-upe-form {
 	padding: 0;
 }
 
+fieldset {
+	border: 0px;
+	padding: 0;
+}
+
+p.woocommerce-SavedPaymentMethods-saveNew {
+	display: flex !important;
+	flex-direction: row !important;
+	align-items: center !important;
+	margin-top: 10px !important;
+}
+
+p.woocommerce-SavedPaymentMethods-saveNew label,
+.mcrpd-hide-labels p.woocommerce-SavedPaymentMethods-saveNew label {
+	display: inline-block !important;
+	margin-bottom: 0 !important;
+	margin-left: 8px !important;
+	font-weight: normal !important;
+}
+
+p.woocommerce-SavedPaymentMethods-saveNew input[type="checkbox"] {
+	width: auto !important;
+	height: auto !important;
+	margin: 0 !important;
+}
+
 .woocommerce-checkout #payment ul.payment_methods {
 	background: #fff;
 	border: 0px;
@@ -1390,4 +1414,55 @@ body.mcrpd-distraction-free footer.mcrpd-checkout-footer-links {
 	resize: vertical;
 	font-family: inherit;
 	line-height: 1.5;
+}
+
+/* Empty Cart Message */
+.mcrpd-empty-cart-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 50vh;
+	width: 100%;
+}
+
+.mcrpd-empty-cart-box {
+	text-align: center;
+	background: #ffffff;
+	border: 1px solid #e1e1e1;
+	border-radius: 10px;
+	padding: 40px;
+	max-width: 400px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.mcrpd-empty-cart-icon {
+	color: #94a3b8;
+	margin-bottom: 20px;
+}
+
+.mcrpd-empty-cart-icon svg {
+	width: 64px;
+	height: 64px;
+}
+
+.mcrpd-empty-cart-title {
+	font-size: 20px;
+	font-weight: 600;
+	color: #333333;
+	margin: 0 0 25px 0;
+}
+
+.mcrpd-empty-cart-button {
+	display: inline-block;
+	color: #ffffff;
+	text-decoration: none;
+	padding: 12px 24px;
+	border-radius: 6px;
+	font-weight: 500;
+	transition: opacity 0.2s;
+}
+
+.mcrpd-empty-cart-button:hover {
+	opacity: 0.9;
+	color: #ffffff;
 }

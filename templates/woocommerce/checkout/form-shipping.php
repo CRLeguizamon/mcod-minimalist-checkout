@@ -86,13 +86,12 @@ $ship_to_different_checked          = $disable_different_shipping_address ? fals
 		$has_order_fields = ! empty( $order_fields ) && is_array( $order_fields );
 		?>
 
-		<?php if ( $has_order_fields || apply_filters( 'woocommerce_enable_order_notes_field', 'yes' === get_option( 'woocommerce_enable_order_comments', 'yes' ) ) ) : ?>
+		<?php if ( $has_order_fields ) : ?>
 			
 			<?php if ( ! WC()->cart->needs_shipping() || wc_ship_to_billing_address_only() ) : ?>
 				<h3 class="mcrpd-section-title"><?php esc_html_e( 'Additional information', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 			<?php endif; ?>
 
-			<?php if ( $has_order_fields ) : ?>
 			<div class="woocommerce-additional-fields__field-wrapper">
 				<?php
 				uasort( $order_fields, function( $a, $b ) {
@@ -105,7 +104,6 @@ $ship_to_different_checked          = $disable_different_shipping_address ? fals
 				}
 				?>
 			</div>
-			<?php endif; ?>
 
 		<?php endif; ?>
 

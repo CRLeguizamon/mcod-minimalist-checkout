@@ -601,3 +601,11 @@ msgstr ""
 msgctxt "trial period"
 msgid "%1$d %2$s"
 msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:258
+msgid "No products in the cart"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:259
+msgid "Back to home"
+msgstr ""

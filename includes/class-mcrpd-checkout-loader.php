@@ -210,6 +210,9 @@ class MCMCHK_Checkout_Loader {
 				.mcrpd-coupon-button {
 					background-color: {$primary_color} !important;
 				}
+				.mcrpd-empty-cart-button {
+					background-color: {$primary_color} !important;
+				}
 			";
 			wp_add_inline_style( 'mcrpd-checkout-css', $custom_css );
 
@@ -243,7 +246,32 @@ class MCMCHK_Checkout_Loader {
 
 			// Remove default WooCommerce login form (we use our own inline AJAX login)
 			remove_action( 'woocommerce_before_checkout_form', 'woocommerce_checkout_login_form', 10 );
+
+			// Handle empty cart message
+			remove_action( 'woocommerce_checkout_cart_empty', 'wc_empty_cart_message', 10 );
+			add_action( 'woocommerce_checkout_cart_empty', array( $this, 'mcmchk_custom_empty_cart_message' ) );
 		}
+	}
+
+	/**
+	 * Display custom empty cart message with a button to go back to home.
+	 */
+	public function mcmchk_custom_empty_cart_message() {
+		?>
+		<div class="mcrpd-empty-cart-wrapper">
+			<div class="mcrpd-empty-cart-box">
+				<div class="mcrpd-empty-cart-icon">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<circle cx="9" cy="21" r="1"></circle>
+						<circle cx="20" cy="21" r="1"></circle>
+						<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+					</svg>
+				</div>
+				<h2 class="mcrpd-empty-cart-title"><?php esc_html_e( 'No products in the cart', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h2>
+				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="mcrpd-empty-cart-button"><?php esc_html_e( 'Back to home', 'mcod-minimalist-checkout-for-woocommerce' ); ?></a>
+			</div>
+		</div>
+		<?php
 	}
 
 	/**
@@ -549,8 +577,16 @@ class MCMCHK_Checkout_Loader {
 		);
 		$values = array_values( $vars );
 
+		$output = str_replace( $keys, $values, $template );
+
+		// Dynamic date variable: {{current_date | X}}
+		$output = preg_replace_callback( '/\{\{\s*current_date\s*\|\s*(\d+)\s*\}\}/i', function( $matches ) {
+			$days = (int) $matches[1];
+			return esc_html( date_i18n( wc_date_format(), strtotime( "+{$days} days" ) ) );
+		}, $output );
+
 		// Output the resolved template (wp_kses_post was already applied on save).
-		echo wp_kses_post( str_replace( $keys, $values, $template ) );
+		echo wp_kses_post( $output );
 	}
 
 	/**
@@ -659,11 +695,12 @@ class MCMCHK_Checkout_Loader {
 				break;
 			}
 
-			// First renewal date: use WCS helper if available
+			// First renewal date: fallback or use WCS helper if available
 			if ( function_exists( 'wcs_cart_calculate_next_payment_date' ) ) {
 				$next_ts = wcs_cart_calculate_next_payment_date( $recurring_cart );
 				if ( $next_ts ) {
-					$vars['first_renewal_date'] = esc_html( date_i18n( wc_date_format(), $next_ts ) );
+					$timestamp = is_numeric( $next_ts ) ? (int) $next_ts : strtotime( $next_ts );
+					$vars['first_renewal_date'] = esc_html( date_i18n( wc_date_format(), $timestamp ) );
 				}
 			}
 
