@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MCOD Minimalist Checkout for WooCommerce
  * Description: A minimalist and fast checkout for WooCommerce.
- * Version: 1.0.4
+ * Version: 1.0.5
  * Author: crleguizamon
  * Author URI: https://mcodform.com/
  * Requires PHP: 7.4
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define core constants
-define( 'MCMCHK_VERSION', '1.0.4' );
+define( 'MCMCHK_VERSION', '1.0.5' );
 define( 'MCMCHK_PLUGIN_FILE', __FILE__ );
 define( 'MCMCHK_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MCMCHK_URL', plugin_dir_url( __FILE__ ) );

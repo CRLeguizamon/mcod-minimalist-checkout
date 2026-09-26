@@ -342,7 +342,7 @@ p.form-row label {
 .mcrpd-hide-labels .woocommerce-shipping-fields__field-wrapper label,
 .mcrpd-hide-labels .woocommerce-address-fields__field-wrapper label,
 .mcrpd-hide-labels .mcrpd-contact-fields label,
-.mcrpd-hide-labels p.form-row:not(#billing_country_field):not(#shipping_country_field):not(#billing_state_field):not(#shipping_state_field):not(.woocommerce-SavedPaymentMethods-saveNew) label {
+.mcrpd-hide-labels p.form-row:not(#billing_country_field):not(#shipping_country_field):not(#billing_state_field):not(#shipping_state_field):not(.woocommerce-SavedPaymentMethods-saveNew) label:not(.woocommerce-form__label-for-checkbox):not(.checkbox) {
 	display: none !important;
 }
 

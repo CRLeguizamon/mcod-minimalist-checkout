@@ -5,7 +5,7 @@ Tags: woocommerce, checkout, minimalist, shop, distraction-free
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -48,6 +48,9 @@ Go to WooCommerce > Settings > Minimalist Checkout to manage fields and toggle f
 2. The plugin's customization settings panel inside WooCommerce.
 
 == Changelog ==
+
+= 1.0.5 =
+* Fix: Terms and conditions checkbox visibility and duplication issues resolved.
 
 = 1.0.4 =
 * Tweak: Improved visual compatibility with Stripe (the 'Save to account' checkbox is now perfectly aligned).

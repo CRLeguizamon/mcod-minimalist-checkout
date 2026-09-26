@@ -1,0 +1,803 @@
+# Copyright (C) 2026 crleguizamon
+# This file is distributed under the GPLv3.
+msgid ""
+msgstr ""
+"Project-Id-Version: MCOD Minimalist Checkout for WooCommerce 1.0.5\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mcod-minimalist-checkout-for-woocommerce\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-09-26T10:14:52-05:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: mcod-minimalist-checkout-for-woocommerce\n"
+
+#. Plugin Name of the plugin
+#: mcod-minimalist-checkout-for-woocommerce.php
+msgid "MCOD Minimalist Checkout for WooCommerce"
+msgstr ""
+
+#. Description of the plugin
+#: mcod-minimalist-checkout-for-woocommerce.php
+msgid "A minimalist and fast checkout for WooCommerce."
+msgstr ""
+
+#. Author of the plugin
+#: mcod-minimalist-checkout-for-woocommerce.php
+msgid "crleguizamon"
+msgstr ""
+
+#. Author URI of the plugin
+#: mcod-minimalist-checkout-for-woocommerce.php
+msgid "https://mcodform.com/"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:76
+#: includes/class-mcrpd-checkout-settings.php:89
+#: includes/class-mcrpd-checkout-settings.php:90
+msgid "Minimalist Checkout"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:228
+#: includes/class-mcrpd-checkout-loader.php:303
+msgid "Login successful. Reloading..."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:229
+#: includes/class-mcrpd-checkout-loader.php:288
+msgid "Please enter your username and password."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:230
+msgid "Please enter a discount code."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:231
+msgid "Error applying coupon. Please try again."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:270
+msgid "No products in the cart"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:271
+msgid "Back to home"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:334
+msgid "No shipping required."
+msgstr ""
+
+#. translators: %d represents the shipping package number.
+#: includes/class-mcrpd-checkout-loader.php:347
+#, php-format
+msgctxt "shipping packages"
+msgid "Shipping %d"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:348
+msgctxt "shipping packages"
+msgid "Shipping"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:397
+msgid "No shipping options available. Please check your address or contact us."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:419
+#: includes/class-mcrpd-checkout-loader.php:430
+msgid "First name"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:420
+#: includes/class-mcrpd-checkout-loader.php:431
+msgid "Last name"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:421
+#: includes/class-mcrpd-checkout-loader.php:432
+msgid "Company (optional)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:422
+#: includes/class-mcrpd-checkout-loader.php:433
+msgid "Street address"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:423
+#: includes/class-mcrpd-checkout-loader.php:434
+msgid "Apartment, suite, unit, etc. (optional)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:424
+#: includes/class-mcrpd-checkout-loader.php:435
+msgid "Town / City"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:425
+#: includes/class-mcrpd-checkout-loader.php:436
+msgid "Postcode / ZIP (optional)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:426
+#: includes/class-mcrpd-checkout-loader.php:437
+msgid "Phone"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-loader.php:427
+#: includes/class-mcrpd-checkout-loader.php:438
+msgid "Email address"
+msgstr ""
+
+#. translators: 1: billing interval number, 2: billing period (month, year, etc.)
+#: includes/class-mcrpd-checkout-loader.php:670
+#, php-format
+msgctxt "billing period"
+msgid "%1$d %2$s"
+msgstr ""
+
+#. translators: 1: trial length number, 2: trial period (day, week, month, year)
+#: includes/class-mcrpd-checkout-loader.php:691
+#, php-format
+msgctxt "trial period"
+msgid "%1$d %2$s"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:128
+msgid "General Settings"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:129
+msgid "Force Template Layout"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:129
+msgid "Force the minimalist template to load on the checkout page. Use this if your theme does not allow selecting the page template."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:130
+msgid "Use Theme Header/Footer"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:130
+msgid "Use your theme's header and footer instead of a completely blank page."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:131
+msgid "Primary Color"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:132
+msgid "Hide Field Labels"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:132
+msgid "Hide labels above checkout fields for a cleaner design (shop style) and use placeholders only. (Enabled by default)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:133
+msgid "Disable \"Use a different shipping address\" button"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:133
+msgid "Always use the billing address as the shipping address and hide the shipping address selector."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:134
+msgid "Disable Coupon Field"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:134
+msgid "Hide the discount code field on the checkout page."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:135
+msgid "Enable digital products mode"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:135
+msgid "Hides the shipping methods section and changes shipping label to \"Instant digital\"."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:138
+msgid "Branding"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:139
+msgid "Hide Brand Header"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:139
+msgid "Check to hide the entire brand header section completely."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:140
+msgid "Brand Logo URL"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:141
+msgid "Brand Logo Width (px)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:141
+msgid "Set the maximum width of the logo in pixels. Default is 125."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:142
+msgid "Brand Name"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:142
+msgid "Used as fallback if logo is not provided."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:145
+msgid "Footer Links"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:146
+msgid "Refund Policy Link"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:147
+msgid "Privacy Policy Link"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:148
+msgid "Terms of Service Link"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:149
+msgid "Contact Link"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:155
+msgid "Subscription Texts"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:161
+msgid "Recurring Payment Block"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:167
+msgid "Customize the recurring payment block shown in the checkout sidebar. Leave empty to use the default WooCommerce Subscriptions output. Use the variables listed below."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:272
+msgid "Minimalist Checkout Settings"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:275
+msgid "Design & Settings"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:276
+#: includes/class-mcrpd-checkout-settings.php:291
+msgid "Checkout Fields"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:277
+msgid "Compatibility & Help"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:295
+#: includes/class-mcrpd-checkout-settings.php:303
+msgid "Billing"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:296
+#: includes/class-mcrpd-checkout-settings.php:304
+#: templates/woocommerce/checkout/review-order.php:100
+msgid "Shipping"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:297
+#: includes/class-mcrpd-checkout-settings.php:305
+msgid "Order"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:319
+msgid "Field"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:320
+msgid "Active"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:321
+msgid "Width"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:322
+msgid "Label"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:323
+msgid "Placeholder"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:349
+msgid "Required WooCommerce field"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:355
+msgid "100%"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:356
+msgid "50% (Left)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:357
+msgid "50% (Right)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:393
+msgid "Restore Default Values"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:396
+msgid "Drag fields to reorder. Changes will apply after saving."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:405
+msgid "Documentation & Compatibility"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:409
+msgid "What does this plugin do?"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:410
+msgid "Minimalist Checkout transforms the standard WooCommerce checkout page into a streamlined, clean, and conversion-focused experience. It optionally hides the theme header and footer to eliminate distractions and applies a modern, responsive two-column layout."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:414
+msgid "Checkout Page Setup"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:415
+msgid "For Minimalist Checkout to work properly, you must configure and edit the page selected as \"Checkout\" in WooCommerce:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:423
+msgid "Warning:"
+msgstr ""
+
+#. translators: %s: URL to WooCommerce advanced settings
+#: includes/class-mcrpd-checkout-settings.php:427
+#, php-format
+msgid "Your checkout page is not created or assigned. You must create it and assign it in %s."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:435
+msgid "Once assigned, edit the page and ensure these two requirements are met:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:437
+msgid "Page Attributes:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:437
+msgid "Select the \"Minimalist Checkout\" template."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:438
+msgid "Content:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:438
+msgid "The page MUST contain the WooCommerce shortcode:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:443
+msgid "Diagnostics & Debugging"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:444
+msgid "If you experience issues with fields not hiding, incorrect ordering, or 3rd-party plugin conflicts, you can add the following shortcode to your checkout page content (below [woocommerce_checkout]):"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:446
+msgid "This will render a diagnostic panel (visible only to Administrators) directly on the checkout frontend. It displays active session status, WooCommerce region settings, active checkout plugins, field priority rules after filters, and a complete dump of the mcmchk_settings database option."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:450
+msgid "3rd-Party Plugin Field Compatibility"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:451
+msgid "If you use 3rd-party plugins (such as custom field editors, ID/Tax number plugins, etc.) to add extra fields to the checkout, they might not inherit the styling automatically. You can resolve this by adding the following CSS classes to those fields within your other plugin's settings:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:456
+msgid "Element"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:457
+msgid "CSS Class to Use"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:458
+#: includes/class-mcrpd-checkout-settings.php:532
+msgid "Description"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:463
+msgid "Field Container (Layout)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:465
+msgid "Applies proper spacing and structure to fit the layout."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:468
+msgid "50% Width Container"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:470
+msgid "Places two fields side-by-side."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:473
+msgid "Text Input"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:475
+msgid "Styles the text input box to match the checkout theme."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:478
+msgid "Number Input"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:480
+msgid "Ideal for ID numbers, phone numbers, or numeric codes."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:483
+msgid "Select Dropdown"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:485
+msgid "Applies minimalist borders and arrow indicators to dropdowns."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:490
+msgid "Practical Example:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:491
+msgid "If your plugin asks for \"Container CSS Classes\", enter:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:492
+msgid "If it asks for \"Input CSS Classes\", enter:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:495
+msgid "Automatic Note:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:495
+msgid "Any field using the native WooCommerce"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:495
+msgid "class (which most plugins include by default) will automatically inherit these visual styles."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:500
+msgid "Custom Hooks (Actions & Filters)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:501
+msgid "While this plugin uses native WooCommerce hooks for the checkout form (Billing, Shipping, etc.), it provides its own custom actions to inject content into the order summary sidebar:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:503
+msgid "Fires before the cart products list."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:504
+msgid "Fires before the order totals container."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:505
+msgid "Fires at the very bottom of the sidebar."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:508
+msgid "Custom Shipping Hooks"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:509
+msgid "To prevent conflicts with WooCommerce core, the plugin replaces the native shipping loop hooks with its own unique prefixes:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:511
+msgid "Filters the shipping package name."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:512
+msgid "Filters the HTML shown when no shipping methods are available."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:513
+msgid "Action fired after each shipping rate is rendered."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:516
+msgid "Standard WooCommerce Hooks"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:517
+msgid "To add features to the main forms (Contact, Billing address, Delivery), continue using native WooCommerce hooks. For example:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:526
+msgid "Subscription Text Variables"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:527
+msgid "Use these variables in the \"Recurring Payment Block\" textarea (Design & Settings tab). They will be replaced with live values from the cart."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:531
+msgid "Variable"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:533
+msgid "Example output"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:537
+msgid "Subtotal of the recurring cart (formatted price)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:538
+msgid "Total of the recurring payment (formatted price)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:539
+msgid "Billing period label"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:539
+msgid "1 month"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:540
+msgid "Billing interval number"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:541
+msgid "Period name only (singular)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:541
+msgid "month"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:542
+msgid "Date of the first renewal payment (Requires official WCS helper)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:542
+msgid "October 1, 2026"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:543
+msgid "Dynamic future date. Replaces the number with any amount of days to add to today."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:543
+msgid "October 10, 2026"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:544
+msgid "Sign-up / enrollment fee (formatted price)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:545
+msgid "Free trial period string (empty if no trial)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:545
+msgid "7 days"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:548
+msgid "Example template:"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:554
+msgid "Frequently Asked Questions (FAQ)"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:557
+msgid "Why are my theme header and footer hidden on the checkout page?"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:558
+msgid "This is the default distraction-free mode to increase conversion rates. You can re-enable your theme header and footer in the \"Design & Settings\" tab by checking \"Use Theme Header/Footer\"."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:561
+msgid "If I disable the header, will I lose my tracking pixels and analytics?"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:562
+msgid "No! The \"distraction-free\" mode only hides the visual elements of the header and footer using CSS. The underlying WordPress <head> is still fully loaded. All your Facebook Pixels, Google Analytics, Tag Manager, and SEO meta tags will continue to work perfectly."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:565
+msgid "How do I reorder checkout fields?"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:566
+msgid "Go to the \"Checkout Fields\" tab and drag the fields using the handle icon on the left side of each row."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:572
+msgid "This plugin is in constant evolution. If you have ideas or suggestions, do not hesitate to contact me at hola@devcristian.com. Your collaboration is highly valued!"
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:702
+msgid "Customize the recurring payment block displayed in the checkout sidebar for subscription products. Use variables like {{recurring_total}}, {{period}}, etc. See the \"Compatibility & Help\" tab for the full variable reference."
+msgstr ""
+
+#: includes/class-mcrpd-checkout-settings.php:716
+msgid "Upload Image"
+msgstr ""
+
+#: mcod-minimalist-checkout-for-woocommerce.php:55
+msgid "Minimalist Checkout for WooCommerce requires WooCommerce to be installed and active."
+msgstr ""
+
+#: templates/woocommerce/checkout/form-billing.php:26
+#: templates/woocommerce/checkout/form-checkout.php:113
+msgid "Contact"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-billing.php:29
+msgid "Already have an account?"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-billing.php:30
+#: templates/woocommerce/checkout/form-billing.php:47
+msgid "Log in"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-billing.php:40
+msgid "Username or email"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-billing.php:43
+msgid "Password"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-billing.php:48
+msgid "Forgot password?"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-billing.php:59
+msgid "Email me with news and offers"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-billing.php:69
+msgid "Billing address"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-checkout.php:14
+msgid "No checkout fields are available."
+msgstr ""
+
+#: templates/woocommerce/checkout/form-checkout.php:49
+msgid "Back to cart"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-checkout.php:82
+msgid "Shipping methods"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-checkout.php:91
+msgid "Payment"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-checkout.php:92
+msgid "All transactions are secure and encrypted."
+msgstr ""
+
+#: templates/woocommerce/checkout/form-checkout.php:104
+msgid "Refund policy"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-checkout.php:107
+msgid "Privacy policy"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-checkout.php:110
+msgid "Terms of service"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-shipping.php:28
+msgid "Shipping address"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-shipping.php:32
+msgid "Same as billing address"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-shipping.php:36
+msgid "Use a different shipping address"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-shipping.php:52
+msgid "Delivery"
+msgstr ""
+
+#: templates/woocommerce/checkout/form-shipping.php:92
+msgid "Additional information"
+msgstr ""
+
+#: templates/woocommerce/checkout/payment.php:28
+msgid "Sorry, it seems there are no available payment methods for your location. Please contact us if you need help."
+msgstr ""
+
+#: templates/woocommerce/checkout/payment.php:28
+msgid "Please fill in your delivery details to view available payment methods."
+msgstr ""
+
+#. translators: $1 and $2: opening and closing emphasis tags respectively
+#: templates/woocommerce/checkout/payment.php:39
+#, php-format
+msgid "Since your browser does not support JavaScript, or it is disabled, please ensure you click the %1$sUpdate totals%2$s button before placing your order. You may be charged more than the amount indicated above if you do not do so."
+msgstr ""
+
+#: templates/woocommerce/checkout/payment.php:41
+msgid "Update totals"
+msgstr ""
+
+#: templates/woocommerce/checkout/payment.php:53
+msgid "Pay now"
+msgstr ""
+
+#: templates/woocommerce/checkout/review-order.php:53
+msgid "Return to cart"
+msgstr ""
+
+#: templates/woocommerce/checkout/review-order.php:65
+msgid "Discount code"
+msgstr ""
+
+#: templates/woocommerce/checkout/review-order.php:66
+msgid "Apply"
+msgstr ""
+
+#: templates/woocommerce/checkout/review-order.php:79
+msgid "Subtotal"
+msgstr ""
+
+#: templates/woocommerce/checkout/review-order.php:87
+msgid "Discount"
+msgstr ""
+
+#: templates/woocommerce/checkout/review-order.php:91
+msgid "Remove coupon"
+msgstr ""
+
+#: templates/woocommerce/checkout/review-order.php:106
+msgid "Instant digital"
+msgstr ""
+
+#: templates/woocommerce/checkout/review-order.php:128
+#: templates/woocommerce/checkout/review-order.php:132
+msgid "Free"
+msgstr ""
+
+#: templates/woocommerce/checkout/review-order.php:162
+msgid "Total"
+msgstr ""
