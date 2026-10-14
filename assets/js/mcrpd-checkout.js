@@ -5,16 +5,22 @@
 (function ($) {
 	'use strict';
 
+	let isMobileSummaryExpanded = false;
+
+	let cardEventsBound = false;
+
 	$(document).ready(function () {
 		init_address_syncing();
 		init_coupon_handlers();
 		init_card_highlights();
 		init_inline_login();
+		init_mobile_summary_toggle();
 	});
 
 	// Re-initialize dynamic visuals after WooCommerce completes an AJAX checkout refresh
 	$(document.body).on('updated_checkout', function () {
-		init_card_highlights();
+		sync_card_highlights();
+		sync_mobile_summary_state();
 	});
 
 	/**
@@ -52,7 +58,7 @@
 				$radioNo.prop('checked', true).closest('.mcrpd-shipping-radio-label').addClass('selected');
 				$radioYes.prop('checked', false).closest('.mcrpd-shipping-radio-label').removeClass('selected');
 				$shippingAddressWrap.slideUp(250);
-				perform_fields_sync();
+				perform_fields_sync(true);
 			}
 		});
 
@@ -64,26 +70,51 @@
 			$('#billing_' + field).on('change blur', function () {
 				if (!$shippingSelector.length || $('input[name="mcmchk_shipping_different"]:checked').val() === 'no') {
 					const val = $(this).val();
-					$('#shipping_' + field).val(val);
+					const $shippingField = $('#shipping_' + field);
+					if ($shippingField.length && $shippingField.val() !== val) {
+						$shippingField.val(val);
 
-					// Trigger change only on calculation-affecting fields when they lose focus or change
-					if (['country', 'state', 'postcode', 'city', 'address_1'].includes(field)) {
-						$('#shipping_' + field).trigger('change');
+						// Trigger change only on calculation-affecting fields when they actually change
+						if (['country', 'state', 'postcode', 'city', 'address_1'].includes(field)) {
+							$shippingField.trigger('change');
+						}
 					}
 				}
 			});
 		});
 
-		// Trigger initial sync if "no" is checked (Same as billing)
+		// Ensure shipping fields are synced right before WooCommerce or Stripe submits the form
+		$('form.woocommerce-checkout').on('checkout_place_order', function () {
+			if (!$shippingSelector.length || $('input[name="mcmchk_shipping_different"]:checked').val() === 'no') {
+				perform_fields_sync(false);
+			}
+			return true;
+		});
+
+		// Trigger initial sync silently if "no" is checked (Same as billing)
 		if (!$shippingSelector.length || $('input[name="mcmchk_shipping_different"]:checked').val() === 'no') {
-			perform_fields_sync();
+			perform_fields_sync(false);
 		}
 
-		function perform_fields_sync() {
+		function perform_fields_sync(triggerUpdate) {
+			let hasLocationChanged = false;
 			fieldsToSync.forEach(function (field) {
-				const billingVal = $('#billing_' + field).val();
-				$('#shipping_' + field).val(billingVal).trigger('change');
+				const $billingField = $('#billing_' + field);
+				const $shippingField = $('#shipping_' + field);
+				if ($billingField.length && $shippingField.length) {
+					const billingVal = $billingField.val();
+					if ($shippingField.val() !== billingVal) {
+						$shippingField.val(billingVal);
+						if (['country', 'state', 'postcode', 'city', 'address_1'].includes(field)) {
+							hasLocationChanged = true;
+						}
+					}
+				}
 			});
+
+			if (triggerUpdate && hasLocationChanged) {
+				$(document.body).trigger('update_checkout');
+			}
 		}
 	}
 
@@ -101,6 +132,7 @@
 			
 			const couponCode = $couponInput.val().trim();
 			if (!couponCode) {
+				$couponMsg.removeClass('success').addClass('error').text(mcmchk_params.i18n_coupon_empty || 'Please enter a discount code.');
 				return;
 			}
 
@@ -113,7 +145,7 @@
 				}
 			});
 
-			$couponMsg.removeClass('success error').html('');
+			$couponMsg.removeClass('success error').text('');
 
 			const ajaxUrl = mcmchk_params.wc_ajax_url.toString().replace('%%endpoint%%', 'apply_coupon');
 
@@ -127,28 +159,29 @@
 				success: function (response) {
 					$('.mcrpd-shop-checkout-right-inner').unblock();
 
-					// Wrap response in a div so .find() can locate root-level elements
-					const $html = $('<div>').html(response);
+					// Safely parse HTML without executing inline scripts
+					const parsedNodes = $.parseHTML(response, document, false);
+					const $html = $('<div>').append(parsedNodes);
 					const $errors = $html.find('.woocommerce-error');
 					const $messages = $html.find('.woocommerce-message');
 
 					if ($errors.length > 0) {
-						$couponMsg.addClass('error').html($errors.text().trim());
+						$couponMsg.addClass('error').text($errors.text().trim());
 					} else if ($messages.length > 0) {
-						$couponMsg.addClass('success').html($messages.text().trim());
+						$couponMsg.addClass('success').text($messages.text().trim());
 						$couponInput.val('');
 						// Trigger standard WooCommerce AJAX totals update
 						$(document.body).trigger('update_checkout');
 					} else {
 						// Fallback if WooCommerce doesn't return default notices
-						$couponMsg.addClass('success').html('Coupon applied.');
+						$couponMsg.addClass('success').text(mcmchk_params.i18n_coupon_applied || 'Coupon applied.');
 						$couponInput.val('');
 						$(document.body).trigger('update_checkout');
 					}
 				},
 				error: function () {
 					$('.mcrpd-shop-checkout-right-inner').unblock();
-					$couponMsg.addClass('error').html('Connection error. Please try again.');
+					$couponMsg.addClass('error').text(mcmchk_params.i18n_coupon_error || 'Connection error. Please try again.');
 				}
 			});
 		});
@@ -185,7 +218,7 @@
 				},
 				error: function () {
 					$('.mcrpd-shop-checkout-right-inner').unblock();
-					alert('Could not remove the coupon.');
+					alert(mcmchk_params.i18n_remove_coupon_error || 'Could not remove the coupon.');
 				}
 			});
 		});
@@ -197,17 +230,12 @@
 	 * Also enables clicking anywhere on a shipping li to select its radio.
 	 */
 	function init_card_highlights() {
-		// Shipping list items card highlights
-		$('.mcrpd-shipping-methods-list input[type="radio"]').each(function () {
-			const $radio = $(this);
-			const $card = $radio.closest('li');
+		sync_card_highlights();
 
-			if ($radio.is(':checked')) {
-				$card.addClass('selected active');
-			} else {
-				$card.removeClass('selected active');
-			}
-		});
+		if (cardEventsBound) {
+			return;
+		}
+		cardEventsBound = true;
 
 		// Listen to user changes in shipping
 		$(document).on('change', '.mcrpd-shipping-methods-list input[type="radio"]', function () {
@@ -227,8 +255,28 @@
 			}
 		});
 
-		// Payment gateway card highlights
-		$('.mcrpd-payment-methods-list input[type="radio"]').each(function () {
+		// Listen to user changes in top-level payment gateways only (exclude inner radios like Stripe Saved Cards)
+		$(document).on('change', '.mcrpd-payment-methods-list li.wc_payment_method > input[type="radio"]', function () {
+			$('.mcrpd-payment-methods-list li.wc_payment_method').removeClass('payment_box_active');
+			$(this).closest('li.wc_payment_method').addClass('payment_box_active');
+		});
+	}
+
+	function sync_card_highlights() {
+		// Shipping list items card highlights
+		$('.mcrpd-shipping-methods-list input[type="radio"]').each(function () {
+			const $radio = $(this);
+			const $card = $radio.closest('li');
+
+			if ($radio.is(':checked')) {
+				$card.addClass('selected active');
+			} else {
+				$card.removeClass('selected active');
+			}
+		});
+
+		// Top-level payment gateway card highlights (direct child radio only)
+		$('.mcrpd-payment-methods-list li.wc_payment_method > input[type="radio"]').each(function () {
 			const $radio = $(this);
 			const $card = $radio.closest('li.wc_payment_method');
 
@@ -237,12 +285,6 @@
 			} else {
 				$card.removeClass('payment_box_active');
 			}
-		});
-
-		// Listen to user changes in payment gateways
-		$(document).on('change', '.mcrpd-payment-methods-list input[type="radio"]', function () {
-			$('.mcrpd-payment-methods-list li.wc_payment_method').removeClass('payment_box_active');
-			$(this).closest('li.wc_payment_method').addClass('payment_box_active');
 		});
 	}
 
@@ -283,13 +325,13 @@
 			const password = $('#mcrpd-login-password').val();
 
 			if (!username || !password) {
-				$loginMsg.removeClass('success').addClass('error').html(mcmchk_params.i18n_login_empty);
+				$loginMsg.removeClass('success').addClass('error').text(mcmchk_params.i18n_login_empty);
 				return;
 			}
 
 			const $btn = $(this);
 			$btn.prop('disabled', true).css('opacity', '0.6');
-			$loginMsg.removeClass('success error').html('');
+			$loginMsg.removeClass('success error').text('');
 
 			$.ajax({
 				type: 'POST',
@@ -302,22 +344,66 @@
 				},
 				success: function (response) {
 					if (response.success) {
-						$loginMsg.removeClass('error').addClass('success').html(response.data.message);
+						$loginMsg.removeClass('error').addClass('success').text(response.data.message);
 						// Reload the checkout page after a short delay to restore session
 						setTimeout(function () {
 							window.location.reload();
 						}, 800);
 					} else {
-						$loginMsg.removeClass('success').addClass('error').html(response.data.message);
+						$loginMsg.removeClass('success').addClass('error').text(response.data.message);
 						$btn.prop('disabled', false).css('opacity', '1');
 					}
 				},
 				error: function () {
-					$loginMsg.removeClass('success').addClass('error').html('Connection error. Please try again.');
+					$loginMsg.removeClass('success').addClass('error').text(mcmchk_params.i18n_connection_error || 'Connection error. Please try again.');
 					$btn.prop('disabled', false).css('opacity', '1');
 				}
 			});
 		});
+	}
+
+	/**
+	 * 5. Mobile Order Summary Accordion Toggle (<= 1000px)
+	 */
+	function init_mobile_summary_toggle() {
+		$(document).on('click', '.mcrpd-mobile-summary-toggle', function (e) {
+			e.preventDefault();
+			isMobileSummaryExpanded = !isMobileSummaryExpanded;
+			const $btn = $(this);
+			const $collapsible = $('#mcrpd-OrderSummaryCollapsible');
+			const $label = $btn.find('.mcrpd-mobile-summary-toggle-label');
+
+			$btn.attr('aria-expanded', isMobileSummaryExpanded ? 'true' : 'false');
+			$btn.toggleClass('is-open', isMobileSummaryExpanded);
+
+			if (isMobileSummaryExpanded) {
+				$label.text(mcmchk_params.i18n_hide_order_summary || 'Hide order summary');
+				$collapsible.stop(true, true).slideDown(250, function () {
+					$(this).addClass('is-open').css('display', '');
+				});
+			} else {
+				$label.text(mcmchk_params.i18n_show_order_summary || 'Show order summary');
+				$collapsible.stop(true, true).slideUp(250, function () {
+					$(this).removeClass('is-open').css('display', '');
+				});
+			}
+		});
+	}
+
+	function sync_mobile_summary_state() {
+		const $btn = $('.mcrpd-mobile-summary-toggle');
+		const $collapsible = $('#mcrpd-OrderSummaryCollapsible');
+		if (!$btn.length || !$collapsible.length) {
+			return;
+		}
+		$btn.attr('aria-expanded', isMobileSummaryExpanded ? 'true' : 'false');
+		$btn.toggleClass('is-open', isMobileSummaryExpanded);
+		$collapsible.toggleClass('is-open', isMobileSummaryExpanded);
+		$btn.find('.mcrpd-mobile-summary-toggle-label').text(
+			isMobileSummaryExpanded
+				? (mcmchk_params.i18n_hide_order_summary || 'Hide order summary')
+				: (mcmchk_params.i18n_show_order_summary || 'Show order summary')
+		);
 	}
 
 })(jQuery);

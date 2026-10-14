@@ -53,12 +53,18 @@ $has_email          = isset( $all_billing_fields['billing_email'] );
 		
 		<div class="mcrpd-contact-fields">
 			<?php woocommerce_form_field( 'billing_email', $all_billing_fields['billing_email'], $checkout->get_value( 'billing_email' ) ); ?>
+			<?php
+			$mcmchk_settings   = get_option( 'mcmchk_settings', array() );
+			$enable_newsletter = ! isset( $mcmchk_settings['enable_newsletter'] ) || '1' === $mcmchk_settings['enable_newsletter'];
+			if ( $enable_newsletter ) :
+			?>
 			<div class="mcrpd-checkbox-wrapper mcrpd-newsletter-wrap">
 				<label class="mcrpd-checkbox-label">
-					<input type="checkbox" id="mcmchk_newsletter" name="mcmchk_newsletter" value="1" checked />
+					<input type="checkbox" id="mcmchk_newsletter" name="mcmchk_newsletter" value="1" <?php checked( ! empty( $_POST['mcmchk_newsletter'] ), true ); // phpcs:ignore WordPress.Security.NonceVerification.Missing ?> />
 					<span class="mcrpd-checkbox-text"><?php esc_html_e( 'Email me with news and offers', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
 				</label>
 			</div>
+			<?php endif; ?>
 		</div>
 	</div>
 	<?php endif; ?>

@@ -60,6 +60,14 @@ class MCMCHK_Checkout_Loader {
 		// AJAX login handler for inline checkout login
 		add_action( 'wp_ajax_nopriv_mcmchk_ajax_login', array( $this, 'handle_ajax_login' ) );
 
+		// Save newsletter opt-in checkbox to order meta
+		add_action( 'woocommerce_checkout_create_order', array( $this, 'save_newsletter_order_meta' ), 10, 2 );
+		add_action( 'woocommerce_admin_order_data_after_billing_address', array( $this, 'display_newsletter_order_meta_in_admin' ) );
+
+		// Normalize state codes (e.g. AMA <-> CO-AMA) for Stripe Express Checkout (Link/Apple Pay/Google Pay) & Store API
+		add_filter( 'rest_pre_dispatch', array( $this, 'normalize_store_api_address_states' ), 10, 3 );
+		add_filter( 'woocommerce_checkout_posted_data', array( $this, 'normalize_posted_checkout_states' ), 10, 1 );
+
 		// WooCommerce Subscriptions: intercept the recurring totals block when a custom template is set.
 		// 'wp' fires on normal page loads; 'woocommerce_checkout_update_order_review' fires during AJAX
 		// checkout fragment refreshes so both paths are covered.
@@ -82,6 +90,11 @@ class MCMCHK_Checkout_Loader {
 	 */
 	public function load_page_template( $template ) {
 		if ( is_page() ) {
+			// Do not override page template on Thank You (order-received) or Order Pay endpoints
+			if ( function_exists( 'is_wc_endpoint_url' ) && ( is_wc_endpoint_url( 'order-received' ) || is_wc_endpoint_url( 'order-pay' ) ) ) {
+				return $template;
+			}
+
 			$meta_template = get_post_meta( get_the_ID(), '_wp_page_template', true );
 			
 			$settings         = get_option( 'mcmchk_settings', array() );
@@ -105,45 +118,49 @@ class MCMCHK_Checkout_Loader {
 	 * @return bool
 	 */
 	public static function is_minimalist_checkout() {
+		// Never treat the Order Received (Thank You) or Order Pay endpoints as the Minimalist Checkout form.
+		if ( function_exists( 'is_wc_endpoint_url' ) && ( is_wc_endpoint_url( 'order-received' ) || is_wc_endpoint_url( 'order-pay' ) ) ) {
+			return false;
+		}
+
 		$checkout_page_id = wc_get_page_id( 'checkout' );
-		
-		// First check if the force_template setting is enabled
-		$settings = get_option( 'mcmchk_settings', array() );
-		$force_template = ! empty( $settings['force_template'] ) ? true : false;
-		
-		if ( $force_template ) {
-			// Ensure we only apply it if we are actually on the checkout page or an AJAX checkout request.
-			$is_checkout_context = false;
-			if ( function_exists( 'is_checkout' ) && is_checkout() ) {
+		$settings         = get_option( 'mcmchk_settings', array() );
+		$force_template   = ! empty( $settings['force_template'] );
+
+		// Determine if we are currently in a WooCommerce checkout context (page load or checkout AJAX).
+		$is_checkout_context = false;
+		if ( wp_doing_ajax() ) {
+			$wc_ajax = isset( $_GET['wc-ajax'] ) ? sanitize_text_field( wp_unslash( $_GET['wc-ajax'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( in_array( $wc_ajax, array( 'update_order_review', 'checkout', 'apply_coupon', 'remove_coupon' ), true ) ) {
 				$is_checkout_context = true;
-			} elseif ( function_exists( 'is_page' ) && is_page( $checkout_page_id ) && $checkout_page_id > 0 ) {
-				$is_checkout_context = true;
-			} elseif ( wp_doing_ajax() ) {
-				$wc_ajax = isset( $_GET['wc-ajax'] ) ? sanitize_text_field( wp_unslash( $_GET['wc-ajax'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				if ( in_array( $wc_ajax, array( 'update_order_review', 'checkout' ), true ) ) {
-					$is_checkout_context = true;
+			}
+		} elseif ( function_exists( 'is_checkout' ) && is_checkout() ) {
+			$is_checkout_context = true;
+		} elseif ( function_exists( 'is_page' ) && $checkout_page_id > 0 && is_page( $checkout_page_id ) ) {
+			$is_checkout_context = true;
+		}
+
+		if ( $is_checkout_context ) {
+			if ( $force_template ) {
+				return true;
+			}
+
+			if ( $checkout_page_id > 0 ) {
+				$meta_template = get_post_meta( $checkout_page_id, '_wp_page_template', true );
+				if ( 'templates/minimalist-checkout-page.php' === $meta_template ) {
+					return true;
 				}
 			}
-			
-			if ( $is_checkout_context ) {
-				return true;
-			}
 		}
 
-		// Always check the WooCommerce checkout page ID setting to be robust against early calls
-		// from other plugins before the main query (is_page()) is fully initialized.
-		if ( $checkout_page_id > 0 ) {
-			$meta_template = get_post_meta( $checkout_page_id, '_wp_page_template', true );
-			if ( 'templates/minimalist-checkout-page.php' === $meta_template ) {
-				return true;
-			}
-		}
-
-		// Fallback to checking current page if we are actually on a page that manually has the template
-		if ( function_exists( 'is_page' ) && is_page() ) {
-			$meta_template = get_post_meta( get_the_ID(), '_wp_page_template', true );
-			if ( 'templates/minimalist-checkout-page.php' === $meta_template ) {
-				return true;
+		// Fallback: check if the currently viewed page manually uses the Minimalist Checkout template.
+		if ( ! wp_doing_ajax() && function_exists( 'is_page' ) && is_page() ) {
+			$current_page_id = get_queried_object_id();
+			if ( $current_page_id > 0 ) {
+				$meta_template = get_post_meta( $current_page_id, '_wp_page_template', true );
+				if ( 'templates/minimalist-checkout-page.php' === $meta_template ) {
+					return true;
+				}
 			}
 		}
 
@@ -194,24 +211,52 @@ class MCMCHK_Checkout_Loader {
 			// Dynamic primary color CSS
 			$settings = get_option( 'mcmchk_settings', array() );
 			$primary_color = ! empty( $settings['primary_color'] ) ? sanitize_hex_color( $settings['primary_color'] ) : '#1773b0';
+			if ( ! $primary_color ) {
+				$primary_color = '#1773b0';
+			}
 			$custom_css = "
+				:root,
+				body.mcrpd-shop-checkout-body {
+					--mcmchk-primary: {$primary_color};
+				}
 				.woocommerce-checkout input[type='text']:focus,
 				.woocommerce-checkout input[type='email']:focus,
 				.woocommerce-checkout input[type='tel']:focus,
+				.woocommerce-checkout input[type='password']:focus,
+				.woocommerce-checkout input[type='number']:focus,
+				.woocommerce-checkout textarea:focus,
 				.woocommerce-checkout select:focus,
+				.woocommerce-checkout .mcrpd-input:focus,
+				.woocommerce-checkout .mcrpd-input-text:focus,
+				.woocommerce-checkout .mcrpd-input-number:focus,
+				.woocommerce-checkout .mcrpd-input-select:focus,
+				.woocommerce-checkout .mcrpd-input-textarea:focus,
+				.mcrpd-login-field input:focus,
 				.woocommerce-checkout .select2-container--default.select2-container--focus .select2-selection--single,
 				.woocommerce-checkout .select2-container--default.select2-container--open .select2-selection--single {
 					border-color: {$primary_color} !important;
 					box-shadow: 0 0 0 1px {$primary_color} !important;
 				}
-				.woocommerce-checkout #payment #place_order {
-					background-color: {$primary_color} !important;
-				}
-				.mcrpd-coupon-button {
-					background-color: {$primary_color} !important;
-				}
+				.woocommerce-checkout #payment #place_order,
+				.mcrpd-login-button,
+				.mcrpd-coupon-button,
 				.mcrpd-empty-cart-button {
 					background-color: {$primary_color} !important;
+					color: #ffffff !important;
+				}
+				.mcrpd-login-link,
+				.mcrpd-forgot-password-link,
+				.mcrpd-mobile-summary-toggle-label,
+				.mcrpd-coupon-tag,
+				.mcrpd-remove-coupon-btn {
+					color: {$primary_color} !important;
+				}
+				.mcrpd-payment-methods-list li.wc_payment_method.payment_box_active {
+					border-color: {$primary_color} !important;
+				}
+				ul.mcrpd-shipping-methods-list input[type='radio'],
+				.mcrpd-shipping-radio-label input[type='radio'] {
+					accent-color: {$primary_color} !important;
 				}
 			";
 			wp_add_inline_style( 'mcrpd-checkout-css', $custom_css );
@@ -220,15 +265,20 @@ class MCMCHK_Checkout_Loader {
 
 			// Pass settings to our JavaScript
 			wp_localize_script( 'mcrpd-checkout-js', 'mcmchk_params', array(
-				'ajax_url'            => admin_url( 'admin-ajax.php' ),
-				'wc_ajax_url'         => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-				'apply_coupon_nonce'  => wp_create_nonce( 'apply-coupon' ),
-				'remove_coupon_nonce' => wp_create_nonce( 'remove-coupon' ),
-				'login_nonce'         => wp_create_nonce( 'mcrpd-login-nonce' ),
-				'i18n_login_success'  => __( 'Login successful. Reloading...', 'mcod-minimalist-checkout-for-woocommerce' ),
-				'i18n_login_empty'    => __( 'Please enter your username and password.', 'mcod-minimalist-checkout-for-woocommerce' ),
-				'i18n_coupon_empty'   => __( 'Please enter a discount code.', 'mcod-minimalist-checkout-for-woocommerce' ),
-				'i18n_coupon_error'   => __( 'Error applying coupon. Please try again.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'ajax_url'                 => admin_url( 'admin-ajax.php' ),
+				'wc_ajax_url'              => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+				'apply_coupon_nonce'       => wp_create_nonce( 'apply-coupon' ),
+				'remove_coupon_nonce'      => wp_create_nonce( 'remove-coupon' ),
+				'login_nonce'              => wp_create_nonce( 'mcrpd-login-nonce' ),
+				'i18n_login_success'       => __( 'Login successful. Reloading...', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_login_empty'         => __( 'Please enter your username and password.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_coupon_empty'        => __( 'Please enter a discount code.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_coupon_applied'      => __( 'Coupon applied.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_coupon_error'        => __( 'Error applying coupon. Please try again.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_remove_coupon_error' => __( 'Could not remove the coupon.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_connection_error'    => __( 'Connection error. Please try again.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_show_order_summary'  => __( 'Show order summary', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_hide_order_summary'  => __( 'Hide order summary', 'mcod-minimalist-checkout-for-woocommerce' ),
 			) );
 		}
 	}
@@ -280,7 +330,20 @@ class MCMCHK_Checkout_Loader {
 	public function handle_ajax_login() {
 		check_ajax_referer( 'mcrpd-login-nonce', 'security' );
 
-		$username = isset( $_POST['username'] ) ? sanitize_user( wp_unslash( $_POST['username'] ) ) : '';
+		// Rate-limiting per IP address (max 5 failed attempts per 5 minutes)
+		$remote_ip     = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
+		$transient_key = 'mcmchk_login_attempts_' . md5( $remote_ip );
+		$attempts      = (int) get_transient( $transient_key );
+
+		if ( $attempts >= 5 ) {
+			wp_send_json_error(
+				array(
+					'message' => __( 'Too many failed login attempts. Please wait a few minutes and try again.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				)
+			);
+		}
+
+		$username = isset( $_POST['username'] ) ? sanitize_text_field( wp_unslash( $_POST['username'] ) ) : '';
 		// Passwords must not be sanitized to preserve special characters.
 		$password = isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
@@ -297,10 +360,214 @@ class MCMCHK_Checkout_Loader {
 		$user = wp_signon( $credentials, is_ssl() );
 
 		if ( is_wp_error( $user ) ) {
-			wp_send_json_error( array( 'message' => $user->get_error_message() ) );
+			set_transient( $transient_key, $attempts + 1, 5 * MINUTE_IN_SECONDS );
+			wp_send_json_error(
+				array(
+					'message' => __( 'Invalid username/email or password. Please try again.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				)
+			);
 		}
 
+		delete_transient( $transient_key );
 		wp_send_json_success( array( 'message' => __( 'Login successful. Reloading...', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+	}
+
+	/**
+	 * Save newsletter opt-in state to the WooCommerce Order meta.
+	 *
+	 * @param WC_Order $order Order object.
+	 * @param array    $data  Posted checkout data.
+	 */
+	public function save_newsletter_order_meta( $order, $data ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce already verified by WooCommerce checkout process.
+		$opted_in = ! empty( $_POST['mcmchk_newsletter'] ) ? 'yes' : 'no';
+		$order->update_meta_data( '_mcmchk_newsletter_optin', $opted_in );
+
+		if ( 'yes' === $opted_in ) {
+			$email = $order->get_billing_email();
+			do_action( 'mcmchk_newsletter_opted_in', $order->get_id(), $email, $order );
+		}
+	}
+
+	/**
+	 * Display newsletter opt-in status in the WooCommerce Admin Order screen.
+	 *
+	 * @param WC_Order $order Order object.
+	 */
+	public function display_newsletter_order_meta_in_admin( $order ) {
+		$opted_in = $order->get_meta( '_mcmchk_newsletter_optin' );
+		if ( 'yes' === $opted_in ) {
+			echo '<p><strong>' . esc_html__( 'Marketing Newsletter:', 'mcod-minimalist-checkout-for-woocommerce' ) . '</strong> ' . esc_html__( 'Subscribed', 'mcod-minimalist-checkout-for-woocommerce' ) . '</p>';
+		}
+	}
+
+	/**
+	 * Normalize a state/department code against the registered WooCommerce states for a given country.
+	 * Resolves mismatches between Stripe Express Checkout / Link ISO codes (e.g. "AMA") and
+	 * country-prefixed state plugins (e.g. "CO-AMA"), or vice-versa.
+	 *
+	 * @param string $state   Raw state code or name.
+	 * @param string $country Two-letter ISO country code (e.g. "CO").
+	 * @return string Normalized state code.
+	 */
+	public function normalize_state_code_for_country( $state, $country ) {
+		if ( empty( $state ) || empty( $country ) || ! function_exists( 'WC' ) || ! isset( WC()->countries ) ) {
+			return $state;
+		}
+
+		$country = strtoupper( trim( (string) $country ) );
+		$state   = trim( (string) $state );
+		$states  = WC()->countries->get_states( $country );
+
+		if ( empty( $states ) || ! is_array( $states ) ) {
+			return $state;
+		}
+
+		// 1. Exact match
+		if ( isset( $states[ $state ] ) ) {
+			return $state;
+		}
+
+		$upper_state = strtoupper( $state );
+		if ( isset( $states[ $upper_state ] ) ) {
+			return $upper_state;
+		}
+
+		// 2. Stripe Link / Wallet sends unprefixed ISO subdivision (e.g. "AMA"), while site uses "CO-AMA"
+		$prefixed = $country . '-' . $upper_state;
+		if ( isset( $states[ $prefixed ] ) ) {
+			return $prefixed;
+		}
+
+		// 3. Input has "CO-AMA" prefix, while site uses unprefixed "AMA"
+		$prefix_str = $country . '-';
+		if ( 0 === strpos( $upper_state, $prefix_str ) ) {
+			$unprefixed = substr( $upper_state, strlen( $prefix_str ) );
+			if ( isset( $states[ $unprefixed ] ) ) {
+				return $unprefixed;
+			}
+		}
+
+		return $state;
+	}
+
+	/**
+	 * Check whether opt-in state code normalization for Stripe Link / Express Checkout is enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_state_normalization_enabled() {
+		$settings = get_option( 'mcmchk_settings', array() );
+		return ! empty( $settings['normalize_state_iso_codes'] ) && '1' === (string) $settings['normalize_state_iso_codes'];
+	}
+
+	/**
+	 * Normalize billing_address.state and shipping_address.state on WooCommerce Store API requests
+	 * before schema validation runs (fixes Stripe Link / Apple Pay / Google Pay state validation errors).
+	 * Only active when explicitly enabled in plugin settings.
+	 *
+	 * @param mixed           $result  Response to replace the requested version with.
+	 * @param WP_REST_Server  $server  Server instance.
+	 * @param WP_REST_Request $request Request used to generate the response.
+	 * @return mixed
+	 */
+	public function normalize_store_api_address_states( $result, $server, $request ) {
+		if ( ! ( $request instanceof WP_REST_Request ) || ! $this->is_state_normalization_enabled() ) {
+			return $result;
+		}
+
+		$route = $request->get_route();
+		if ( false === strpos( $route, '/wc/store/' ) ) {
+			return $result;
+		}
+
+		// Ensure existing WC()->customer session states are also normalized
+		if ( function_exists( 'WC' ) && isset( WC()->customer ) && is_object( WC()->customer ) ) {
+			$cust_b_country = WC()->customer->get_billing_country();
+			$cust_b_state   = WC()->customer->get_billing_state();
+			if ( $cust_b_country && $cust_b_state ) {
+				$norm_b = $this->normalize_state_code_for_country( $cust_b_state, $cust_b_country );
+				if ( $norm_b !== $cust_b_state ) {
+					WC()->customer->set_billing_state( $norm_b );
+				}
+			}
+
+			$cust_s_country = WC()->customer->get_shipping_country();
+			$cust_s_state   = WC()->customer->get_shipping_state();
+			if ( $cust_s_country && $cust_s_state ) {
+				$norm_s = $this->normalize_state_code_for_country( $cust_s_state, $cust_s_country );
+				if ( $norm_s !== $cust_s_state ) {
+					WC()->customer->set_shipping_state( $norm_s );
+				}
+			}
+		}
+
+		$address_keys = array( 'billing_address', 'shipping_address' );
+		foreach ( $address_keys as $addr_key ) {
+			$address = $request->get_param( $addr_key );
+			if ( is_array( $address ) && ! empty( $address['state'] ) ) {
+				$country = ! empty( $address['country'] )
+					? $address['country']
+					: ( function_exists( 'WC' ) && isset( WC()->customer ) ? WC()->customer->get_billing_country() : '' );
+
+				$normalized_state = $this->normalize_state_code_for_country( $address['state'], $country );
+				if ( $normalized_state !== $address['state'] ) {
+					$address['state'] = $normalized_state;
+					$request->set_param( $addr_key, $address );
+				}
+			}
+		}
+
+		// Also support Store API /wc/store/v1/batch sub-requests
+		$batch_requests = $request->get_param( 'requests' );
+		if ( is_array( $batch_requests ) ) {
+			$modified = false;
+			foreach ( $batch_requests as $idx => $sub_req ) {
+				if ( isset( $sub_req['body'] ) && is_array( $sub_req['body'] ) ) {
+					foreach ( $address_keys as $addr_key ) {
+						if ( ! empty( $sub_req['body'][ $addr_key ]['state'] ) ) {
+							$country = ! empty( $sub_req['body'][ $addr_key ]['country'] )
+								? $sub_req['body'][ $addr_key ]['country']
+								: ( function_exists( 'WC' ) && isset( WC()->customer ) ? WC()->customer->get_billing_country() : '' );
+
+							$norm = $this->normalize_state_code_for_country( $sub_req['body'][ $addr_key ]['state'], $country );
+							if ( $norm !== $sub_req['body'][ $addr_key ]['state'] ) {
+								$batch_requests[ $idx ]['body'][ $addr_key ]['state'] = $norm;
+								$modified = true;
+							}
+						}
+					}
+				}
+			}
+			if ( $modified ) {
+				$request->set_param( 'requests', $batch_requests );
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Normalize billing_state and shipping_state during standard WooCommerce checkout submission.
+	 * Only active when explicitly enabled in plugin settings.
+	 *
+	 * @param array $data Posted checkout data.
+	 * @return array
+	 */
+	public function normalize_posted_checkout_states( $data ) {
+		if ( ! is_array( $data ) || ! $this->is_state_normalization_enabled() ) {
+			return $data;
+		}
+
+		if ( ! empty( $data['billing_state'] ) && ! empty( $data['billing_country'] ) ) {
+			$data['billing_state'] = $this->normalize_state_code_for_country( $data['billing_state'], $data['billing_country'] );
+		}
+
+		if ( ! empty( $data['shipping_state'] ) && ! empty( $data['shipping_country'] ) ) {
+			$data['shipping_state'] = $this->normalize_state_code_for_country( $data['shipping_state'], $data['shipping_country'] );
+		}
+
+		return $data;
 	}
 
 	/**
@@ -335,7 +602,8 @@ class MCMCHK_Checkout_Loader {
 			return;
 		}
 
-		$packages = WC()->shipping()->get_packages();
+		$packages       = WC()->shipping()->get_packages();
+		$total_packages = count( $packages );
 
 		foreach ( $packages as $i => $package ) {
 			$available_methods = $package['rates'];
@@ -350,8 +618,13 @@ class MCMCHK_Checkout_Loader {
 				$package
 			);
 
+			if ( $total_packages > 1 && ! empty( $package_name ) ) {
+				echo '<p class="mcrpd-shipping-package-name">' . esc_html( $package_name ) . '</p>';
+			}
+
 			if ( ! empty( $available_methods ) ) {
-				echo '<ul id="shipping_method" class="woocommerce-shipping-methods mcrpd-shipping-methods-list">';
+				$list_id = ( 0 === (int) $i ) ? 'shipping_method' : 'shipping_method_' . absint( $i );
+				echo '<ul id="' . esc_attr( $list_id ) . '" class="woocommerce-shipping-methods mcrpd-shipping-methods-list">';
 
 				foreach ( $available_methods as $method ) {
 					$method_id   = $method->id;
@@ -388,6 +661,9 @@ class MCMCHK_Checkout_Loader {
 						wp_kses_post( $label_text ) // Contains <span> price markup
 					);
 
+					// Allow third-party plugins (e.g. pickup points) to hook after each shipping rate.
+					do_action( 'mcmchk_after_shipping_rate', $method, $i );
+
 					echo '</li>';
 				}
 
@@ -396,9 +672,6 @@ class MCMCHK_Checkout_Loader {
 				// No methods available for this package.
 				echo '<p class="mcrpd-no-shipping-available">' . wp_kses_post( apply_filters( 'mcmchk_no_shipping_available_html', __( 'No shipping options available. Please check your address or contact us.', 'mcod-minimalist-checkout-for-woocommerce' ) ) ) . '</p>';
 			}
-
-			// Allow third-party plugins to hook after shipping methods.
-			do_action( 'mcmchk_after_shipping_rate', $method ?? null, $i );
 		}
 	}
 
@@ -429,7 +702,7 @@ class MCMCHK_Checkout_Loader {
 			'shipping' => array(
 				'shipping_first_name' => __( 'First name', 'mcod-minimalist-checkout-for-woocommerce' ),
 				'shipping_last_name'  => __( 'Last name', 'mcod-minimalist-checkout-for-woocommerce' ),
-				'shipping_company'    => array( 'placeholder' => __( 'Company (optional)', 'mcod-minimalist-checkout-for-woocommerce' ) ),
+				'shipping_company'    => __( 'Company (optional)', 'mcod-minimalist-checkout-for-woocommerce' ),
 				'shipping_address_1'  => __( 'Street address', 'mcod-minimalist-checkout-for-woocommerce' ),
 				'shipping_address_2'  => __( 'Apartment, suite, unit, etc. (optional)', 'mcod-minimalist-checkout-for-woocommerce' ),
 				'shipping_city'       => __( 'Town / City', 'mcod-minimalist-checkout-for-woocommerce' ),

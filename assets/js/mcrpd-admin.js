@@ -77,7 +77,6 @@
 			});
 
 			$('#mcmchk_field_overrides_json').val(JSON.stringify(fieldData));
-			console.log('Minimalist Checkout: Updated JSON overrides field: ', fieldData);
 		}
 
 		// Run once on page load to initialize the JSON field state
@@ -103,15 +102,15 @@
 		// =====================================================================
 		// 5. Input & Toggle Listeners (Sync JSON on any change)
 		// =====================================================================
-		// Toggle Switch: Disable text inputs when field is disabled
+		// Toggle Switch: Disable text inputs and width select when field is disabled
 		$(document).on('change', '.mcrpd-field-enabled-toggle', function() {
 			var $row = $(this).closest('tr');
 			if ($(this).is(':checked')) {
 				$row.removeClass('mcrpd-field-disabled');
-				$row.find('input[type="text"]').prop('disabled', false);
+				$row.find('input[type="text"], select').prop('disabled', false);
 			} else {
 				$row.addClass('mcrpd-field-disabled');
-				$row.find('input[type="text"]').prop('disabled', true);
+				$row.find('input[type="text"], select').prop('disabled', true);
 			}
 			mcrpdUpdateFieldJSON();
 		});
@@ -132,7 +131,11 @@
 		$('.mcrpd-reset-fields-btn').on('click', function(e) {
 			e.preventDefault();
 
-			if (!confirm('Are you sure you want to restore all fields to their default configuration? This action will remove your customizations.')) {
+			var confirmMsg = (typeof mcmchk_admin_params !== 'undefined' && mcmchk_admin_params.i18n_confirm_reset)
+				? mcmchk_admin_params.i18n_confirm_reset
+				: 'Are you sure you want to restore all fields to their default configuration? This action will remove your customizations.';
+
+			if (!confirm(confirmMsg)) {
 				return;
 			}
 
@@ -154,10 +157,13 @@
 		$('.mcrpd-media-upload').on('click', function(e) {
 			e.preventDefault();
 			var button = $(this);
+			var selectTitle = (typeof mcmchk_admin_params !== 'undefined' && mcmchk_admin_params.i18n_select_logo) ? mcmchk_admin_params.i18n_select_logo : 'Select Logo';
+			var buttonText  = (typeof mcmchk_admin_params !== 'undefined' && mcmchk_admin_params.i18n_use_image) ? mcmchk_admin_params.i18n_use_image : 'Use this image';
+
 			var custom_uploader = wp.media({
-				title: 'Select Logo',
+				title: selectTitle,
 				library: { type: 'image' },
-				button: { text: 'Use this image' },
+				button: { text: buttonText },
 				multiple: false
 			}).on('select', function() {
 				var attachment = custom_uploader.state().get('selection').first().toJSON();

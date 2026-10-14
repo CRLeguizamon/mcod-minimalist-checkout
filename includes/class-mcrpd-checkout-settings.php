@@ -116,6 +116,15 @@ class MCMCHK_Checkout_Settings {
 		// Plugin admin assets
 		wp_enqueue_style( 'mcrpd-admin-css', MCMCHK_ASSETS . 'css/mcrpd-admin.css', array(), MCMCHK_VERSION );
 		wp_enqueue_script( 'mcrpd-admin-js', MCMCHK_ASSETS . 'js/mcrpd-admin.js', array( 'jquery', 'jquery-ui-sortable', 'wp-color-picker' ), MCMCHK_VERSION, true );
+		wp_localize_script(
+			'mcrpd-admin-js',
+			'mcmchk_admin_params',
+			array(
+				'i18n_confirm_reset' => __( 'Are you sure you want to restore all fields to their default configuration? This action will remove your customizations.', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_select_logo'   => __( 'Select Logo', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'i18n_use_image'     => __( 'Use this image', 'mcod-minimalist-checkout-for-woocommerce' ),
+			)
+		);
 	}
 
 	/**
@@ -132,7 +141,22 @@ class MCMCHK_Checkout_Settings {
 		add_settings_field( 'hide_labels', __( 'Hide Field Labels', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'hide_labels', 'desc' => __( 'Hide labels above checkout fields for a cleaner design (shop style) and use placeholders only. (Enabled by default)', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
 		add_settings_field( 'disable_different_shipping_address', __( 'Disable "Use a different shipping address" button', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'disable_different_shipping_address', 'desc' => __( 'Always use the billing address as the shipping address and hide the shipping address selector.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
 		add_settings_field( 'disable_coupon', __( 'Disable Coupon Field', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'disable_coupon', 'desc' => __( 'Hide the discount code field on the checkout page.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+		add_settings_field( 'enable_newsletter', __( 'Show Newsletter Opt-in Checkbox', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'enable_newsletter', 'desc' => __( 'Display the "Email me with news and offers" checkbox below the billing email field and save customer preference to the order.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
 		add_settings_field( 'enable_digital_mode', __( 'Enable digital products mode', 'mcod-minimalist-checkout-for-woocommerce' ), array( $this, 'render_checkbox_field' ), 'mcrpd-checkout-settings', 'mcmchk_general_section', array( 'key' => 'enable_digital_mode', 'desc' => __( 'Hides the shipping methods section and changes shipping label to "Instant digital".', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+		add_settings_field(
+			'normalize_state_iso_codes',
+			esc_html__( 'Normalize State Codes (Express Checkout)', 'mcod-minimalist-checkout-for-woocommerce' ) . ' <span class="mcrpd-badge-stripe">' . esc_html__( 'Stripe', 'mcod-minimalist-checkout-for-woocommerce' ) . '</span>',
+			array( $this, 'render_checkbox_field' ),
+			'mcrpd-checkout-settings',
+			'mcmchk_general_section',
+			array(
+				'key'           => 'normalize_state_iso_codes',
+				'highlight_box' => true,
+				'badge'         => __( 'Stripe', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'box_title'     => __( 'Stripe Link, Apple Pay & Google Pay — Regional State Code Fix', 'mcod-minimalist-checkout-for-woocommerce' ),
+				'desc'          => __( 'Enable ONLY if customers see an "invalid state (e.g. AMA). Must be one of: CO-AMA..." error when paying with Stripe Link, Apple Pay, or Google Pay. Some regional location/shipping plugins register state codes with a country prefix (like "CO-AMA"), whereas Stripe Express Checkout sends standard ISO codes without the prefix ("AMA"). When enabled, the checkout automatically converts between both formats so Express Checkout payments do not fail. (Disabled by default)', 'mcod-minimalist-checkout-for-woocommerce' ),
+			)
+		);
 
 		// Branding Section
 		add_settings_section( 'mcmchk_branding_section', __( 'Branding', 'mcod-minimalist-checkout-for-woocommerce' ), null, 'mcrpd-checkout-settings' );
@@ -183,7 +207,9 @@ class MCMCHK_Checkout_Settings {
 		$output['hide_brand_header'] = isset( $input['hide_brand_header'] ) ? '1' : '0';
 		$output['disable_different_shipping_address'] = isset( $input['disable_different_shipping_address'] ) ? '1' : '0';
 		$output['disable_coupon']    = isset( $input['disable_coupon'] ) ? '1' : '0';
+		$output['enable_newsletter'] = isset( $input['enable_newsletter'] ) ? '1' : '0';
 		$output['enable_digital_mode'] = isset( $input['enable_digital_mode'] ) ? '1' : '0';
+		$output['normalize_state_iso_codes'] = isset( $input['normalize_state_iso_codes'] ) ? '1' : '0';
 		$output['primary_color']     = isset( $input['primary_color'] ) ? sanitize_hex_color( $input['primary_color'] ) : '#1773b0';
 		$output['brand_logo']        = isset( $input['brand_logo'] ) ? esc_url_raw( $input['brand_logo'] ) : '';
 		$output['brand_logo_width']  = isset( $input['brand_logo_width'] ) ? absint( $input['brand_logo_width'] ) : 125;
@@ -551,6 +577,14 @@ class MCMCHK_Checkout_Settings {
 							<?php endif; ?>
 
 							<div class="mcrpd-docs-card">
+								<h3><?php esc_html_e( 'Stripe Link, Apple Pay & Google Pay — State / Department Code Compatibility', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
+								<p><?php esc_html_e( 'By default, both WooCommerce core and Stripe Express Checkout (Link, Apple Pay, Google Pay) use unprefixed ISO 3166-2 subdivision codes for states/departments (for example, "AMA", "ANT", or "DC" in Colombia).', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
+								<p><?php esc_html_e( 'However, in certain countries (especially in Latin America), third-party shipping or city-selector plugins override WooCommerce states and add a 2-letter country prefix (e.g., "CO-AMA", "CO-ANT", "CO-DC"). Because Stripe Link submits addresses directly to the WooCommerce Store API (/wp-json/wc/store/v1/checkout) using standard unprefixed codes ("AMA"), WooCommerce rejects the payment with:', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
+								<p><code><?php esc_html_e( 'The provided state (AMA) is not valid. Must be one of: CO-AMA, CO-ANT...', 'mcod-minimalist-checkout-for-woocommerce' ); ?></code></p>
+								<p><?php esc_html_e( 'If your store uses a regional plugin that prefixes state codes and you use Stripe Link or Express Checkout, enable "Normalize State Codes for Stripe Link & Express Checkout" in the "Design & Settings" tab. When enabled, Minimalist Checkout automatically translates between unprefixed ("AMA") and prefixed ("CO-AMA") state codes before WooCommerce validates the order.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
+							</div>
+
+							<div class="mcrpd-docs-card">
 								<h3><?php esc_html_e( 'Frequently Asked Questions (FAQ)', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 								<ul class="mcrpd-docs-faq">
 									<li>
@@ -654,21 +688,41 @@ class MCMCHK_Checkout_Settings {
 
 	private function get_setting( $key, $default = '' ) {
 		$options = get_option( self::OPTION_NAME, array() );
-		if ( 'hide_labels' === $key && ! isset( $options[ $key ] ) ) {
+		if ( in_array( $key, array( 'hide_labels', 'enable_newsletter' ), true ) && ! isset( $options[ $key ] ) ) {
 			return '1';
 		}
 		return isset( $options[ $key ] ) ? $options[ $key ] : $default;
 	}
 
 	public function render_checkbox_field( $args ) {
-		$key   = $args['key'];
-		$value = $this->get_setting( $key, '0' );
+		$key           = $args['key'];
+		$value         = $this->get_setting( $key, '0' );
+		$highlight_box = ! empty( $args['highlight_box'] );
+
+		if ( $highlight_box ) {
+			echo '<div class="mcrpd-setting-box-yellow">';
+			if ( ! empty( $args['badge'] ) || ! empty( $args['box_title'] ) ) {
+				echo '<div class="mcrpd-setting-box-header">';
+				if ( ! empty( $args['badge'] ) ) {
+					echo '<span class="mcrpd-badge-stripe">' . esc_html( $args['badge'] ) . '</span>';
+				}
+				if ( ! empty( $args['box_title'] ) ) {
+					echo '<span class="mcrpd-setting-box-title">' . esc_html( $args['box_title'] ) . '</span>';
+				}
+				echo '</div>';
+			}
+		}
+
 		echo '<label class="mcrpd-checkbox-field-label">';
 		echo '<input type="checkbox" name="' . esc_attr( self::OPTION_NAME . '[' . $key . ']' ) . '" value="1" ' . checked( 1, $value, false ) . ' /> ';
 		if ( ! empty( $args['desc'] ) ) {
 			echo '<span class="description">' . esc_html( $args['desc'] ) . '</span>';
 		}
 		echo '</label>';
+
+		if ( $highlight_box ) {
+			echo '</div>';
+		}
 	}
 
 	public function render_text_field( $args ) {

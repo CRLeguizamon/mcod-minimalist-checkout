@@ -30,11 +30,20 @@ define( 'MCMCHK_ASSETS', MCMCHK_URL . 'assets/' );
  * Initialize the plugin.
  */
 function mcmchk_init() {
+	load_plugin_textdomain(
+		'mcod-minimalist-checkout-for-woocommerce',
+		false,
+		dirname( plugin_basename( __FILE__ ) ) . '/languages'
+	);
+
 	// Check if WooCommerce is active
 	if ( ! class_exists( 'WooCommerce' ) ) {
 		add_action( 'admin_notices', 'mcmchk_missing_wc_notice' );
 		return;
 	}
+
+	// Add Settings link in Plugins list
+	add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'mcmchk_plugin_action_links' );
 
 	// Include the main loader
 	require_once MCMCHK_INC . 'class-mcrpd-checkout-loader.php';
@@ -47,6 +56,18 @@ function mcmchk_init() {
 	MCMCHK_Checkout_Loader::get_instance();
 }
 add_action( 'plugins_loaded', 'mcmchk_init' );
+
+/**
+ * Add Settings action link to the Plugins page.
+ *
+ * @param array $links Existing plugin action links.
+ * @return array Modified plugin action links.
+ */
+function mcmchk_plugin_action_links( $links ) {
+	$settings_link = '<a href="' . esc_url( admin_url( 'admin.php?page=mcrpd-checkout-settings' ) ) . '">' . esc_html__( 'Settings', 'mcod-minimalist-checkout-for-woocommerce' ) . '</a>';
+	array_unshift( $links, $settings_link );
+	return $links;
+}
 
 /**
  * Render admin notice when WooCommerce is missing.

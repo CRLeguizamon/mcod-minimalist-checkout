@@ -17,7 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <?php
 $settings                           = get_option( 'mcmchk_settings', array() );
-$disable_different_shipping_address = ! empty( $settings['disable_different_shipping_address'] );
+$enable_digital_mode                = ! empty( $settings['enable_digital_mode'] ) && '1' === $settings['enable_digital_mode'];
+$disable_different_shipping_address = ! empty( $settings['disable_different_shipping_address'] ) || $enable_digital_mode;
 $ship_to_different_checked          = $disable_different_shipping_address ? false : (bool) apply_filters( 'woocommerce_ship_to_different_address_checked', 'shipping' === get_option( 'woocommerce_ship_to_destination' ) ? 1 : 0 );
 ?>
 <div class="woocommerce-shipping-fields mcrpd-shipping-fields-wrap">

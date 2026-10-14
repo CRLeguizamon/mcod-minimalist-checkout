@@ -20,13 +20,13 @@ MCOD Minimalist Checkout for WooCommerce replaces the standard and noisy WooComm
 * **Complete AJAX Integration**: Allows shipping rates calculation, applying/removing discount coupons, and updating payment methods immediately without page reloads.
 * **Smart Address Mapping**: First screen intuitive for delivery address, with automatic background synchronization for the billing address to maintain compatibility with external payment gateways.
 * **Clean & Secure Development**: Built using standard WordPress and WooCommerce hooks to ensure future compatibility.
-* **Customization Settings**: Built-in settings panel to toggle optional fields, discount coupons, and tweak the user experience directly from WooCommerce > Settings > Minimalist Checkout.
+* **Customization Settings**: Built-in settings panel to toggle optional fields, discount coupons, and tweak the user experience directly from the Minimalist Checkout menu in WordPress Admin.
 
 == Installation ==
 
-1. Upload the `mcod-minimalist-checkout` folder to the `/wp-content/plugins/` directory.
+1. Upload the `mcod-minimalist-checkout-for-woocommerce` folder to the `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Edit the WooCommerce Checkout page and, under the 'Page Attributes -> Template' section, select 'Minimalist Checkout'.
+3. Edit the WooCommerce Checkout page and, under the 'Page Attributes -> Template' section, select 'Minimalist Checkout' (or enable 'Force Template Layout' in the Minimalist Checkout settings).
 
 == Frequently Asked Questions ==
 
@@ -40,7 +40,7 @@ No. Our checkout is fully isolated and distraction-free. It intentionally remove
 Yes! You can easily toggle the coupon form on or off directly from the plugin settings panel.
 
 = How do I customize it? =
-Go to WooCommerce > Settings > Minimalist Checkout to manage fields and toggle features on and off.
+Go to Minimalist Checkout in your WordPress Admin menu to manage fields, customize colors and branding, and toggle features on and off.
 
 == Screenshots ==
 

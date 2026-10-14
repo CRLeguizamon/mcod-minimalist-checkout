@@ -12,6 +12,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <div class="mcrpd-checkout-review-inner woocommerce-checkout-review-order-table">
 
+	<!-- Mobile Order Summary Toggle Bar (visible on <= 1000px) -->
+	<button type="button" class="mcrpd-mobile-summary-toggle" aria-expanded="false" aria-controls="mcrpd-OrderSummaryCollapsible">
+		<span class="mcrpd-mobile-summary-toggle-left">
+			<svg class="mcrpd-summary-cart-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+				<circle cx="9" cy="21" r="1"></circle>
+				<circle cx="20" cy="21" r="1"></circle>
+				<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+			</svg>
+			<span class="mcrpd-mobile-summary-toggle-label"><?php esc_html_e( 'Show order summary', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
+			<svg class="mcrpd-summary-chevron-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+				<polyline points="6 9 12 15 18 9"></polyline>
+			</svg>
+		</span>
+		<span class="mcrpd-mobile-summary-toggle-total"><?php wc_cart_totals_order_total_html(); ?></span>
+	</button>
+
+	<div id="mcrpd-OrderSummaryCollapsible" class="mcrpd-order-summary-collapsible">
+
 	<!-- Cart Products List -->
 	<?php do_action( 'mcmchk_before_sidebar_product_list' ); ?>
 	<ul class="mcrpd-sidebar-product-list">
@@ -106,15 +124,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 					esc_html_e( 'Instant digital', 'mcod-minimalist-checkout-for-woocommerce' );
 				} else {
 					if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) {
-						$packages = WC()->shipping()->get_packages();
+						$packages       = WC()->shipping()->get_packages();
 						$shipping_total = 0;
 						$shipping_label = '';
+						$incl_tax       = WC()->cart->display_prices_including_tax();
 						
 						foreach ( $packages as $i => $package ) {
 							$chosen_method = isset( WC()->session->chosen_shipping_methods[ $i ] ) ? WC()->session->chosen_shipping_methods[ $i ] : '';
 							if ( $chosen_method && isset( $package['rates'][ $chosen_method ] ) ) {
-								$rate = $package['rates'][ $chosen_method ];
-								$shipping_total += $rate->cost;
+								$rate            = $package['rates'][ $chosen_method ];
+								$shipping_total += (float) $rate->cost;
+								if ( $incl_tax && method_exists( $rate, 'get_shipping_tax' ) ) {
+									$shipping_total += (float) $rate->get_shipping_tax();
+								}
 								$shipping_label = $rate->label;
 							}
 						}
@@ -135,6 +157,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 				?>
 			</span>
 		</div>
+
+		<!-- Cart Fees (if any) -->
+		<?php foreach ( WC()->cart->get_fees() as $fee ) : ?>
+			<div class="mcrpd-totals-row mcrpd-fee-row">
+				<span class="mcrpd-totals-label"><?php echo esc_html( $fee->name ); ?></span>
+				<span class="mcrpd-totals-value"><?php wc_cart_totals_fee_html( $fee ); ?></span>
+			</div>
+		<?php endforeach; ?>
 
 		<!-- Taxes (if enabled) -->
 		<?php if ( wc_tax_enabled() && ! WC()->cart->display_prices_including_tax() ) : ?>
@@ -170,5 +200,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	</div>
 	<?php do_action( 'mcmchk_after_sidebar_totals' ); ?>
+
+	</div><!-- /#mcrpd-OrderSummaryCollapsible -->
 
 </div>

@@ -91,9 +91,7 @@ $hide_labels = ! isset( $settings['hide_labels'] ) || '1' === $settings['hide_la
 				<h3 class="mcrpd-section-title"><?php esc_html_e( 'Payment', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 				<p class="mcrpd-section-subtitle"><?php esc_html_e( 'All transactions are secure and encrypted.', 'mcod-minimalist-checkout-for-woocommerce' ); ?></p>
 				
-				<div id="payment" class="woocommerce-checkout-payment">
-					<?php woocommerce_checkout_payment(); ?>
-				</div>
+				<?php woocommerce_checkout_payment(); ?>
 			</div>
 
 		</form>
