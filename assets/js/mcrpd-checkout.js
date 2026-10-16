@@ -15,6 +15,7 @@
 		init_card_highlights();
 		init_inline_login();
 		init_mobile_summary_toggle();
+		init_minimalist_cart();
 	});
 
 	// Re-initialize dynamic visuals after WooCommerce completes an AJAX checkout refresh
@@ -186,8 +187,8 @@
 			});
 		});
 
-		// Remove Coupon
-		$(document).on('click', '.mcrpd-remove-coupon-btn', function (e) {
+		// Remove Coupon (Checkout)
+		$(document).on('click', '.mcrpd-remove-coupon-btn:not(.mcrpd-cart-remove-coupon-btn)', function (e) {
 			e.preventDefault();
 
 			const couponCode = $(this).data('coupon');
@@ -404,6 +405,165 @@
 				? (mcmchk_params.i18n_hide_order_summary || 'Hide order summary')
 				: (mcmchk_params.i18n_show_order_summary || 'Show order summary')
 		);
+	}
+
+	/**
+	 * 6. Minimalist Cart AJAX Interactions (Quantity Stepper, Item Removal, Coupons)
+	 */
+	function init_minimalist_cart() {
+		if (!$('.mcrpd-cart-wrapper').length) {
+			return;
+		}
+
+		let qtyDebounceTimer = null;
+
+		function sendCartAjax(payload, onComplete) {
+			const $wrapper = $('.mcrpd-cart-wrapper');
+			$wrapper.css('opacity', '0.65');
+
+			$.ajax({
+				type: 'POST',
+				url: mcmchk_params.ajax_url,
+				data: $.extend({
+					action: 'mcmchk_update_cart_item',
+					security: mcmchk_params.cart_nonce
+				}, payload),
+				success: function (response) {
+					$wrapper.css('opacity', '1');
+					if (response && response.success && response.data) {
+						if (response.data.is_empty && response.data.redirect_url) {
+							window.location.href = response.data.redirect_url;
+							return;
+						}
+						if (typeof response.data.items_html === 'string') {
+							$('#mcrpd-cart-items-list').html(response.data.items_html);
+						}
+						if (typeof response.data.summary_html === 'string') {
+							$('#mcrpd-cart-summary-box').html(response.data.summary_html);
+						}
+						if (typeof response.data.item_count !== 'undefined') {
+							$('#mcrpd-cart-count-badge').text(response.data.item_count);
+						}
+						if (response.data.notice_html) {
+							const $msg = $('#mcrpd-cart-coupon-message');
+							$msg.removeClass('success error')
+								.addClass(response.data.notice_type === 'error' ? 'error' : 'success')
+								.text(response.data.notice_html)
+								.show();
+						}
+						$(document.body).trigger('updated_cart_totals');
+					}
+					if (typeof onComplete === 'function') {
+						onComplete(response);
+					}
+				},
+				error: function () {
+					$wrapper.css('opacity', '1');
+				}
+			});
+		}
+
+		// Stepper Minus / Plus buttons
+		$(document).on('click', '.mcrpd-qty-btn', function (e) {
+			e.preventDefault();
+			const $btn = $(this);
+			const key = $btn.data('cart-item-key');
+			const $input = $btn.closest('.mcrpd-qty-stepper').find('.mcrpd-qty-input');
+			if (!$input.length || !key) {
+				return;
+			}
+
+			let currentVal = parseInt($input.val(), 10);
+			if (isNaN(currentVal)) {
+				currentVal = 1;
+			}
+			const maxAttr = parseInt($input.attr('max'), 10);
+			let nextVal = $btn.hasClass('mcrpd-qty-minus') ? currentVal - 1 : currentVal + 1;
+
+			if (nextVal < 0) {
+				nextVal = 0;
+			}
+			if (!isNaN(maxAttr) && maxAttr > 0 && nextVal > maxAttr) {
+				nextVal = maxAttr;
+			}
+
+			$input.val(nextVal);
+
+			clearTimeout(qtyDebounceTimer);
+			qtyDebounceTimer = setTimeout(function () {
+				sendCartAjax({
+					sub_action: 'update_qty',
+					cart_item_key: key,
+					quantity: nextVal
+				});
+			}, 300);
+		});
+
+		// Direct manual input change on quantity field
+		$(document).on('change', '.mcrpd-qty-input', function () {
+			const $input = $(this);
+			const key = $input.data('cart-item-key');
+			let val = parseInt($input.val(), 10);
+			if (isNaN(val) || val < 0) {
+				val = 0;
+			}
+			clearTimeout(qtyDebounceTimer);
+			sendCartAjax({
+				sub_action: 'update_qty',
+				cart_item_key: key,
+				quantity: val
+			});
+		});
+
+		// Remove item button
+		$(document).on('click', '.mcrpd-cart-remove-btn', function (e) {
+			e.preventDefault();
+			const key = $(this).data('cart-item-key');
+			if (!key) {
+				return;
+			}
+			sendCartAjax({
+				sub_action: 'update_qty',
+				cart_item_key: key,
+				quantity: 0
+			});
+		});
+
+		// Apply coupon on Cart
+		$(document).on('click', '#mcrpd_cart_apply_coupon_btn', function (e) {
+			e.preventDefault();
+			const code = ($('#mcrpd_cart_coupon_code').val() || '').trim();
+			const $msg = $('#mcrpd-cart-coupon-message');
+			if (!code) {
+				$msg.removeClass('success').addClass('error').text(mcmchk_params.i18n_coupon_empty || 'Please enter a discount code.').show();
+				return;
+			}
+			sendCartAjax({
+				sub_action: 'apply_coupon',
+				coupon_code: code
+			});
+		});
+
+		// Submit coupon on Enter key inside Cart coupon input
+		$(document).on('keydown', '#mcrpd_cart_coupon_code', function (e) {
+			if (e.which === 13) {
+				e.preventDefault();
+				$('#mcrpd_cart_apply_coupon_btn').trigger('click');
+			}
+		});
+
+		// Remove coupon on Cart
+		$(document).on('click', '.mcrpd-cart-remove-coupon-btn', function (e) {
+			e.preventDefault();
+			const code = $(this).data('coupon');
+			if (!code) {
+				return;
+			}
+			sendCartAjax({
+				sub_action: 'remove_coupon',
+				coupon_code: code
+			});
+		});
 	}
 
 })(jQuery);

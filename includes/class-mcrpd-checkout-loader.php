@@ -32,15 +32,15 @@ class MCMCHK_Checkout_Loader {
 	 * Constructor.
 	 */
 	private function __construct() {
-		// Register Page Template
+		// Register Page Template (use PHP_INT_MAX on template_include so Force Template overrides Elementor Page Templates at priority 11 and Theme Builder at priority 99)
 		add_filter( 'theme_page_templates', array( $this, 'register_page_template' ) );
-		add_filter( 'template_include', array( $this, 'load_page_template' ) );
+		add_filter( 'template_include', array( $this, 'load_page_template' ), PHP_INT_MAX );
 
 		// Hook into WooCommerce templates override
 		add_filter( 'woocommerce_locate_template', array( $this, 'override_woocommerce_template' ), 10, 3 );
 
-		// Add custom body classes
-		add_filter( 'body_class', array( $this, 'add_body_classes' ) );
+		// Add custom body classes (use PHP_INT_MAX to clean up conflicting Elementor template classes when Minimalist mode is active)
+		add_filter( 'body_class', array( $this, 'add_body_classes' ), PHP_INT_MAX );
 
 		// Load assets
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ), 15 );
@@ -51,6 +51,15 @@ class MCMCHK_Checkout_Loader {
 		// Sync WooCommerce AJAX order review updates
 		add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'add_checkout_fragments' ) );
 
+		// Ensure customer billing/shipping country is always within allowed store countries.
+		// Prevents WooCommerce from returning empty address fields when a logged-in user or
+		// Express Checkout wallet (Stripe Link / Apple Pay) sets a country outside allowed countries.
+		add_action( 'wp', array( $this, 'mcmchk_ensure_valid_customer_countries' ), 5 );
+		add_action( 'template_redirect', array( $this, 'mcmchk_ensure_valid_customer_countries' ), 5 );
+		add_action( 'woocommerce_checkout_init', array( $this, 'mcmchk_ensure_valid_customer_countries' ), 5 );
+		add_action( 'woocommerce_checkout_update_order_review', array( $this, 'mcmchk_ensure_valid_customer_countries' ), 1 );
+		add_filter( 'woocommerce_checkout_get_value', array( $this, 'mcmchk_filter_checkout_country_value' ), 10, 2 );
+
 		// Customize checkout fields
 		add_filter( 'woocommerce_checkout_fields', array( $this, 'customize_checkout_fields' ), PHP_INT_MAX );
 
@@ -59,6 +68,10 @@ class MCMCHK_Checkout_Loader {
 
 		// AJAX login handler for inline checkout login
 		add_action( 'wp_ajax_nopriv_mcmchk_ajax_login', array( $this, 'handle_ajax_login' ) );
+
+		// AJAX handler for Minimalist Cart updates (quantity stepper, item removal, coupons)
+		add_action( 'wp_ajax_mcmchk_update_cart_item', array( $this, 'handle_ajax_update_cart_item' ) );
+		add_action( 'wp_ajax_nopriv_mcmchk_update_cart_item', array( $this, 'handle_ajax_update_cart_item' ) );
 
 		// Save newsletter opt-in checkbox to order meta
 		add_action( 'woocommerce_checkout_create_order', array( $this, 'save_newsletter_order_meta' ), 10, 2 );
@@ -78,37 +91,30 @@ class MCMCHK_Checkout_Loader {
 	}
 
 	/**
-	 * Register the Minimalist Checkout Page Template.
+	 * Register the Minimalist Checkout and Minimalist Cart Page Templates.
 	 */
 	public function register_page_template( $templates ) {
 		$templates['templates/minimalist-checkout-page.php'] = __( 'Minimalist Checkout', 'mcod-minimalist-checkout-for-woocommerce' );
+		$templates['templates/minimalist-cart-page.php']     = __( 'Minimalist Cart', 'mcod-minimalist-checkout-for-woocommerce' );
 		return $templates;
 	}
 
 	/**
-	 * Load the custom Page Template from our plugin.
+	 * Load the custom Page Template from our plugin when Minimalist Checkout, Cart, or Order Received is active.
 	 */
 	public function load_page_template( $template ) {
-		if ( is_page() ) {
-			// Do not override page template on Thank You (order-received) or Order Pay endpoints
-			if ( function_exists( 'is_wc_endpoint_url' ) && ( is_wc_endpoint_url( 'order-received' ) || is_wc_endpoint_url( 'order-pay' ) ) ) {
-				return $template;
-			}
+		// Never override Order Pay endpoint
+		if ( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'order-pay' ) ) {
+			return $template;
+		}
 
-			$meta_template = get_post_meta( get_the_ID(), '_wp_page_template', true );
-			
-			$settings         = get_option( 'mcmchk_settings', array() );
-			$force_template   = ! empty( $settings['force_template'] ) ? true : false;
-			$checkout_page_id = wc_get_page_id( 'checkout' );
-			$is_checkout_page = ( $checkout_page_id > 0 && (int) get_the_ID() === (int) $checkout_page_id );
-
-			if ( 'templates/minimalist-checkout-page.php' === $meta_template || ( $force_template && $is_checkout_page ) ) {
-				$plugin_template = MCMCHK_TEMPLATES . 'minimalist-checkout-page.php';
-				if ( file_exists( $plugin_template ) ) {
-					return $plugin_template;
-				}
+		if ( self::is_minimalist_page() ) {
+			$plugin_template = MCMCHK_TEMPLATES . 'minimalist-checkout-page.php';
+			if ( file_exists( $plugin_template ) ) {
+				return $plugin_template;
 			}
 		}
+
 		return $template;
 	}
 
@@ -118,12 +124,16 @@ class MCMCHK_Checkout_Loader {
 	 * @return bool
 	 */
 	public static function is_minimalist_checkout() {
-		// Never treat the Order Received (Thank You) or Order Pay endpoints as the Minimalist Checkout form.
+		// Never treat the Order Received (Thank You), Order Pay, or Cart page as the Minimalist Checkout form.
 		if ( function_exists( 'is_wc_endpoint_url' ) && ( is_wc_endpoint_url( 'order-received' ) || is_wc_endpoint_url( 'order-pay' ) ) ) {
+			return false;
+		}
+		if ( ! wp_doing_ajax() && function_exists( 'is_cart' ) && is_cart() ) {
 			return false;
 		}
 
 		$checkout_page_id = wc_get_page_id( 'checkout' );
+		$cart_page_id     = wc_get_page_id( 'cart' );
 		$settings         = get_option( 'mcmchk_settings', array() );
 		$force_template   = ! empty( $settings['force_template'] );
 
@@ -153,10 +163,10 @@ class MCMCHK_Checkout_Loader {
 			}
 		}
 
-		// Fallback: check if the currently viewed page manually uses the Minimalist Checkout template.
+		// Fallback: check if the currently viewed non-cart page manually uses the Minimalist Checkout template.
 		if ( ! wp_doing_ajax() && function_exists( 'is_page' ) && is_page() ) {
 			$current_page_id = get_queried_object_id();
-			if ( $current_page_id > 0 ) {
+			if ( $current_page_id > 0 && (int) $current_page_id !== (int) $cart_page_id ) {
 				$meta_template = get_post_meta( $current_page_id, '_wp_page_template', true );
 				if ( 'templates/minimalist-checkout-page.php' === $meta_template ) {
 					return true;
@@ -168,10 +178,92 @@ class MCMCHK_Checkout_Loader {
 	}
 
 	/**
-	 * Override WooCommerce templates when on our custom checkout layout.
+	 * Check if the current page or AJAX request represents the Minimalist Cart.
+	 * Activated via 'force_cart_template' setting OR by assigning the Minimalist Cart / Minimalist Checkout page template.
+	 *
+	 * @return bool
+	 */
+	public static function is_minimalist_cart() {
+		if ( wp_doing_ajax() ) {
+			$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( 'mcmchk_update_cart_item' === $action ) {
+				return true;
+			}
+			return false;
+		}
+
+		if ( function_exists( 'is_wc_endpoint_url' ) && ( is_wc_endpoint_url( 'order-received' ) || is_wc_endpoint_url( 'order-pay' ) ) ) {
+			return false;
+		}
+
+		$cart_page_id        = wc_get_page_id( 'cart' );
+		$settings            = get_option( 'mcmchk_settings', array() );
+		$force_cart_template = ! empty( $settings['force_cart_template'] );
+
+		$is_cart_context = ( function_exists( 'is_cart' ) && is_cart() ) || ( function_exists( 'is_page' ) && $cart_page_id > 0 && is_page( $cart_page_id ) );
+
+		if ( $is_cart_context ) {
+			if ( $force_cart_template ) {
+				return true;
+			}
+
+			if ( $cart_page_id > 0 ) {
+				$meta_template = get_post_meta( $cart_page_id, '_wp_page_template', true );
+				if ( in_array( $meta_template, array( 'templates/minimalist-cart-page.php', 'templates/minimalist-checkout-page.php' ), true ) ) {
+					return true;
+				}
+			}
+		}
+
+		// Fallback: check if any custom page manually uses the Minimalist Cart template.
+		if ( function_exists( 'is_page' ) && is_page() ) {
+			$current_page_id = get_queried_object_id();
+			if ( $current_page_id > 0 ) {
+				$meta_template = get_post_meta( $current_page_id, '_wp_page_template', true );
+				if ( 'templates/minimalist-cart-page.php' === $meta_template ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if the current page is the Minimalist Order Received (Thank You) endpoint.
+	 * Activated via 'force_thankyou_template' setting.
+	 *
+	 * @return bool
+	 */
+	public static function is_minimalist_thankyou() {
+		if ( wp_doing_ajax() ) {
+			return false;
+		}
+
+		if ( ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'order-received' ) ) {
+			return false;
+		}
+
+		$settings                = get_option( 'mcmchk_settings', array() );
+		$force_thankyou_template = ! empty( $settings['force_thankyou_template'] );
+
+		return $force_thankyou_template;
+	}
+
+	/**
+	 * Check if any Minimalist experience (Checkout, Cart, or Order Received) is active.
+	 *
+	 * @return bool
+	 */
+	public static function is_minimalist_page() {
+		return self::is_minimalist_checkout() || self::is_minimalist_cart() || self::is_minimalist_thankyou();
+	}
+
+	/**
+	 * Override WooCommerce templates when on our custom Minimalist Checkout, Cart, or Order Received layout.
 	 */
 	public function override_woocommerce_template( $template, $template_name, $template_path ) {
-		if ( self::is_minimalist_checkout() ) {
+		if ( self::is_minimalist_page() ) {
 			$custom_template = MCMCHK_TEMPLATES . 'woocommerce/' . $template_name;
 			if ( file_exists( $custom_template ) ) {
 				return $custom_template;
@@ -184,14 +276,31 @@ class MCMCHK_Checkout_Loader {
 	 * Add custom classes to the body tag.
 	 */
 	public function add_body_classes( $classes ) {
-		if ( self::is_minimalist_checkout() ) {
+		if ( self::is_minimalist_page() ) {
+			// Remove conflicting Elementor page-template classes when Force Template overrides an Elementor template
+			$classes = array_values( array_diff( (array) $classes, array(
+				'elementor-template-full-width',
+				'elementor-template-canvas',
+				'elementor-page',
+			) ) );
+
 			$classes[] = 'mcrpd-shop-checkout-body';
-			
-			$settings = get_option( 'mcmchk_settings', array() );
+
+			if ( self::is_minimalist_cart() ) {
+				$classes[] = 'mcrpd-minimalist-cart-body';
+			} elseif ( self::is_minimalist_thankyou() ) {
+				$classes[] = 'mcrpd-minimalist-thankyou-body';
+			}
+
+			$settings     = get_option( 'mcmchk_settings', array() );
 			$use_theme_hf = ! empty( $settings['use_theme_hf'] ) ? true : false;
-			
+
 			if ( ! $use_theme_hf ) {
 				$classes[] = 'mcrpd-distraction-free';
+			}
+
+			if ( ! empty( $settings['disable_add_to_subscription'] ) ) {
+				$classes[] = 'mcrpd-hide-add-to-subscription';
 			}
 		}
 		return $classes;
@@ -201,7 +310,7 @@ class MCMCHK_Checkout_Loader {
 	 * Enqueue stylesheet and script files.
 	 */
 	public function enqueue_assets() {
-		if ( self::is_minimalist_checkout() ) {
+		if ( self::is_minimalist_page() ) {
 			// Enqueue Inter font from Google Fonts for shop-like modern feel
 			wp_enqueue_style( 'mcrpd-google-fonts', 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap', array(), '1.0.0' );
 			
@@ -231,6 +340,10 @@ class MCMCHK_Checkout_Loader {
 				.woocommerce-checkout .mcrpd-input-number:focus,
 				.woocommerce-checkout .mcrpd-input-select:focus,
 				.woocommerce-checkout .mcrpd-input-textarea:focus,
+				.mcrpd-coupon-input:focus,
+				input.mcrpd-coupon-input:focus,
+				.mcrpd-cart-wrapper input[type='text']:focus,
+				.mcrpd-cart-wrapper input[type='number']:focus,
 				.mcrpd-login-field input:focus,
 				.woocommerce-checkout .select2-container--default.select2-container--focus .select2-selection--single,
 				.woocommerce-checkout .select2-container--default.select2-container--open .select2-selection--single {
@@ -240,7 +353,12 @@ class MCMCHK_Checkout_Loader {
 				.woocommerce-checkout #payment #place_order,
 				.mcrpd-login-button,
 				.mcrpd-coupon-button,
-				.mcrpd-empty-cart-button {
+				.mcrpd-empty-cart-button,
+				.mcrpd-cart-checkout-btn,
+				.mcrpd-cart-cta-wrapper a.checkout-button,
+				.mcrpd-thankyou-continue-btn,
+				.mcrpd-thankyou-download-btn,
+				.wcsatt-add-cart-to-subscription-wrapper .wcsatt-add-to-subscription-button {
 					background-color: {$primary_color} !important;
 					color: #ffffff !important;
 				}
@@ -248,14 +366,21 @@ class MCMCHK_Checkout_Loader {
 				.mcrpd-forgot-password-link,
 				.mcrpd-mobile-summary-toggle-label,
 				.mcrpd-coupon-tag,
-				.mcrpd-remove-coupon-btn {
+				.mcrpd-remove-coupon-btn,
+				.mcrpd-cart-continue-link,
+				.mcrpd-thankyou-icon-circle,
+				.wcsatt-add-cart-to-subscription-wrapper table.my_account_subscriptions td.subscription-id a {
 					color: {$primary_color} !important;
+				}
+				.mcrpd-thankyou-icon-circle {
+					border-color: {$primary_color} !important;
 				}
 				.mcrpd-payment-methods-list li.wc_payment_method.payment_box_active {
 					border-color: {$primary_color} !important;
 				}
 				ul.mcrpd-shipping-methods-list input[type='radio'],
-				.mcrpd-shipping-radio-label input[type='radio'] {
+				.mcrpd-shipping-radio-label input[type='radio'],
+				.wcsatt-add-cart-to-subscription-wrapper .wcsatt-add-cart-to-subscription-action-input {
 					accent-color: {$primary_color} !important;
 				}
 			";
@@ -270,6 +395,7 @@ class MCMCHK_Checkout_Loader {
 				'apply_coupon_nonce'       => wp_create_nonce( 'apply-coupon' ),
 				'remove_coupon_nonce'      => wp_create_nonce( 'remove-coupon' ),
 				'login_nonce'              => wp_create_nonce( 'mcrpd-login-nonce' ),
+				'cart_nonce'               => wp_create_nonce( 'mcmchk-cart-nonce' ),
 				'i18n_login_success'       => __( 'Login successful. Reloading...', 'mcod-minimalist-checkout-for-woocommerce' ),
 				'i18n_login_empty'         => __( 'Please enter your username and password.', 'mcod-minimalist-checkout-for-woocommerce' ),
 				'i18n_coupon_empty'        => __( 'Please enter a discount code.', 'mcod-minimalist-checkout-for-woocommerce' ),
@@ -676,11 +802,143 @@ class MCMCHK_Checkout_Loader {
 	}
 
 	/**
+	 * Resolve a valid country code for a checkout section ('billing' or 'shipping')
+	 * against WooCommerce's allowed/shipping countries list.
+	 *
+	 * If a logged-in user's saved country (or a country set in session by Stripe Link / Apple Pay)
+	 * is outside the store's allowed countries, WooCommerce's WC_Countries::get_address_fields()
+	 * returns an empty array, causing all billing/shipping fields to disappear.
+	 *
+	 * @param string $country Current country code.
+	 * @param string $section Section type ('billing' or 'shipping').
+	 * @return string Valid two-letter ISO country code.
+	 */
+	public function mcmchk_get_valid_country_for_section( $country, $section = 'billing' ) {
+		if ( ! function_exists( 'WC' ) || ! isset( WC()->countries ) || ! is_object( WC()->countries ) ) {
+			return (string) $country;
+		}
+
+		$country = strtoupper( trim( (string) $country ) );
+		$allowed = ( 'shipping' === $section )
+			? WC()->countries->get_shipping_countries()
+			: WC()->countries->get_allowed_countries();
+
+		if ( empty( $allowed ) || ! is_array( $allowed ) ) {
+			return ! empty( $country ) ? $country : WC()->countries->get_base_country();
+		}
+
+		if ( ! empty( $country ) && array_key_exists( $country, $allowed ) ) {
+			return $country;
+		}
+
+		$base_country = WC()->countries->get_base_country();
+		if ( ! empty( $base_country ) && array_key_exists( $base_country, $allowed ) ) {
+			return $base_country;
+		}
+
+		reset( $allowed );
+		return (string) key( $allowed );
+	}
+
+	/**
+	 * Ensure WC()->customer billing and shipping countries are valid within the store's allowed countries.
+	 * Self-heals sessions and logged-in user profiles where Stripe Link, Apple Pay, or legacy user_meta
+	 * stored a country code outside woocommerce_allowed_countries.
+	 */
+	public function mcmchk_ensure_valid_customer_countries() {
+		if ( ! function_exists( 'WC' ) || ! isset( WC()->customer ) || ! is_object( WC()->customer ) ) {
+			return;
+		}
+
+		$current_billing = WC()->customer->get_billing_country();
+		$valid_billing   = $this->mcmchk_get_valid_country_for_section( $current_billing, 'billing' );
+		if ( ! empty( $valid_billing ) && $valid_billing !== $current_billing ) {
+			WC()->customer->set_billing_country( $valid_billing );
+		}
+
+		$current_shipping = WC()->customer->get_shipping_country();
+		$valid_shipping   = $this->mcmchk_get_valid_country_for_section( $current_shipping, 'shipping' );
+		if ( ! empty( $valid_shipping ) && $valid_shipping !== $current_shipping ) {
+			WC()->customer->set_shipping_country( $valid_shipping );
+		}
+	}
+
+	/**
+	 * Filter checkout field values for billing_country and shipping_country so WC_Checkout::get_value()
+	 * never returns a country outside the store's allowed countries.
+	 *
+	 * @param mixed  $value Current value (or null).
+	 * @param string $input Field key.
+	 * @return mixed
+	 */
+	public function mcmchk_filter_checkout_country_value( $value, $input ) {
+		if ( 'billing_country' !== $input && 'shipping_country' !== $input ) {
+			return $value;
+		}
+
+		if ( ! function_exists( 'WC' ) || ! isset( WC()->countries ) || ! is_object( WC()->countries ) ) {
+			return $value;
+		}
+
+		$section = ( 'shipping_country' === $input ) ? 'shipping' : 'billing';
+
+		// Check explicit value if already filtered, otherwise check WC()->customer value
+		$candidate = ! empty( $value ) ? (string) $value : '';
+		if ( empty( $candidate ) && isset( WC()->customer ) && is_object( WC()->customer ) ) {
+			$candidate = ( 'shipping' === $section )
+				? (string) WC()->customer->get_shipping_country()
+				: (string) WC()->customer->get_billing_country();
+		}
+
+		if ( ! empty( $candidate ) ) {
+			$valid = $this->mcmchk_get_valid_country_for_section( $candidate, $section );
+			if ( $valid !== $candidate ) {
+				return $valid;
+			}
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Clean, standardize, and format WooCommerce checkout fields.
 	 */
 	public function customize_checkout_fields( $fields ) {
 		if ( ! self::is_minimalist_checkout() ) {
 			return $fields;
+		}
+
+		// Defensive self-healing: if WC_Countries::get_address_fields() returned an empty address set
+		// (e.g. because a logged-in user's billing_country or Express Checkout wallet country was not
+		// in woocommerce_allowed_countries, or a 3rd-party filter cleared them), restore the base fields
+		// before applying Minimalist Checkout field overrides.
+		if ( function_exists( 'WC' ) && isset( WC()->countries ) && is_object( WC()->countries ) ) {
+			if ( ! isset( $fields['billing'] ) || ! is_array( $fields['billing'] ) ) {
+				$fields['billing'] = array();
+			}
+			if ( ! isset( $fields['billing']['billing_first_name'] ) || ! isset( $fields['billing']['billing_address_1'] ) ) {
+				$valid_b_country  = $this->mcmchk_get_valid_country_for_section(
+					( isset( WC()->customer ) && is_object( WC()->customer ) ) ? WC()->customer->get_billing_country() : '',
+					'billing'
+				);
+				$default_b_fields = WC()->countries->get_address_fields( $valid_b_country, 'billing_' );
+				if ( is_array( $default_b_fields ) && ! empty( $default_b_fields ) ) {
+					$fields['billing'] = array_merge( $default_b_fields, $fields['billing'] );
+				}
+			}
+
+			if ( isset( $fields['shipping'] ) && is_array( $fields['shipping'] ) ) {
+				if ( ! isset( $fields['shipping']['shipping_first_name'] ) || ! isset( $fields['shipping']['shipping_address_1'] ) ) {
+					$valid_s_country  = $this->mcmchk_get_valid_country_for_section(
+						( isset( WC()->customer ) && is_object( WC()->customer ) ) ? WC()->customer->get_shipping_country() : '',
+						'shipping'
+					);
+					$default_s_fields = WC()->countries->get_address_fields( $valid_s_country, 'shipping_' );
+					if ( is_array( $default_s_fields ) && ! empty( $default_s_fields ) ) {
+						$fields['shipping'] = array_merge( $default_s_fields, $fields['shipping'] );
+					}
+				}
+			}
 		}
 
 		$settings        = get_option( 'mcmchk_settings', array() );
@@ -802,48 +1060,49 @@ class MCMCHK_Checkout_Loader {
 	}
 
 	/**
-	 * Set up WooCommerce Subscriptions recurring totals interception.
+	 * Set up WooCommerce Subscriptions recurring totals interception for both Checkout and Cart.
 	 *
-	 * Called on 'wp' hook (priority 20) to ensure WCS has already registered its
-	 * display_recurring_totals action. Removes WCS's default output and replaces
-	 * it with our custom template renderer — but only when a template is saved.
+	 * Called on 'wp' hook (priority 20), 'woocommerce_checkout_update_order_review' (priority 5),
+	 * and inside handle_ajax_update_cart_item(). Removes WCS's default output and replaces
+	 * it with our custom template renderer when a template is saved.
 	 */
 	public function mcmchk_setup_subscription_hooks() {
+		if ( ! class_exists( 'WC_Subscriptions' ) ) {
+			return;
+		}
+
 		$settings = get_option( 'mcmchk_settings', array() );
+
+		// Optionally disable WooCommerce Subscriptions' "Add cart to an existing subscription" block
+		if ( ! empty( $settings['disable_add_to_subscription'] ) && self::is_minimalist_page() ) {
+			add_filter( 'wcsatt_cart_to_subscription_options_enabled', '__return_false', 999 );
+			add_filter( 'woocommerce_subscriptions_adding_cart_to_subscription_supported', '__return_false', 999 );
+			remove_action( 'woocommerce_checkout_order_review', array( 'WCS_ATT_Display_Cart', 'show_cart_to_subscription_options' ), 100 );
+			remove_action( 'woocommerce_after_cart_totals', array( 'WCS_ATT_Display_Cart', 'show_cart_to_subscription_options' ), 100 );
+		}
+
 		$template = isset( $settings['subscription_recurring_template'] ) ? trim( $settings['subscription_recurring_template'] ) : '';
 
 		if ( empty( $template ) ) {
 			return; // Nothing to do: keep WCS default output.
 		}
 
-		// Remove WooCommerce Subscriptions' default recurring totals renderer.
-		// WCS registers this on 'woocommerce_review_order_after_order_total' at priority 10.
+		// Remove WooCommerce Subscriptions' default recurring totals renderer on Checkout and Cart.
 		remove_action( 'woocommerce_review_order_after_order_total', array( 'WC_Subscriptions_Cart', 'display_recurring_totals' ), 10 );
+		remove_action( 'woocommerce_cart_totals_after_order_total', array( 'WC_Subscriptions_Cart', 'display_recurring_totals' ), 10 );
 
-		// Add our custom renderer at the same priority.
+		// Add our custom renderer at the same priority on both Checkout and Cart.
 		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'mcmchk_display_custom_recurring_totals' ), 10 );
+		add_action( 'woocommerce_cart_totals_after_order_total', array( $this, 'mcmchk_display_custom_recurring_totals' ), 10 );
 	}
 
 	/**
-	 * Render the custom recurring totals block with variables resolved.
+	 * Render a template string with {{variables}} and {{current_date | X}} placeholders resolved.
 	 *
-	 * Only called when a template is saved (set up by mcmchk_setup_subscription_hooks).
-	 * If the cart has no subscriptions the block is simply not rendered.
+	 * @param string $template Raw HTML template from settings.
+	 * @param array  $vars     Associative array of variable_name => resolved_value.
 	 */
-	public function mcmchk_display_custom_recurring_totals() {
-		// Guard: only render when there are recurring carts.
-		if ( ! isset( WC()->cart ) || empty( WC()->cart->recurring_carts ) ) {
-			return;
-		}
-
-		$settings = get_option( 'mcmchk_settings', array() );
-		$template = isset( $settings['subscription_recurring_template'] ) ? trim( $settings['subscription_recurring_template'] ) : '';
-
-		if ( empty( $template ) ) {
-			return;
-		}
-
-		$vars   = $this->mcmchk_get_recurring_cart_vars();
+	private function mcmchk_render_resolved_subscription_template( $template, $vars ) {
 		$keys   = array_map(
 			function( $k ) { return '{{' . $k . '}}'; },
 			array_keys( $vars )
@@ -859,7 +1118,207 @@ class MCMCHK_Checkout_Loader {
 		}, $output );
 
 		// Output the resolved template (wp_kses_post was already applied on save).
-		echo wp_kses_post( $output );
+		echo '<div class="mcrpd-recurring-template-wrap">' . wp_kses_post( $output ) . '</div>';
+	}
+
+	/**
+	 * Render the custom recurring totals block with variables resolved (Cart & Checkout).
+	 *
+	 * Only called when a template is saved (set up by mcmchk_setup_subscription_hooks).
+	 * If the cart has no subscriptions the block is simply not rendered.
+	 */
+	public function mcmchk_display_custom_recurring_totals() {
+		if ( ! isset( WC()->cart ) ) {
+			return;
+		}
+
+		// Ensure recurring_carts are calculated if the cart contains a subscription
+		if ( empty( WC()->cart->recurring_carts ) && class_exists( 'WC_Subscriptions_Cart' ) && method_exists( 'WC_Subscriptions_Cart', 'cart_contains_subscription' ) && WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			WC()->cart->calculate_totals();
+		}
+
+		// Guard: only render when there are recurring carts.
+		if ( empty( WC()->cart->recurring_carts ) ) {
+			return;
+		}
+
+		$settings = get_option( 'mcmchk_settings', array() );
+		$template = isset( $settings['subscription_recurring_template'] ) ? trim( $settings['subscription_recurring_template'] ) : '';
+
+		if ( empty( $template ) ) {
+			return;
+		}
+
+		$vars = $this->mcmchk_get_recurring_cart_vars();
+		$this->mcmchk_render_resolved_subscription_template( $template, $vars );
+	}
+
+	/**
+	 * Render the Recurring Payment Block on the Minimalist Order Received (Thank You) sidebar.
+	 *
+	 * @param WC_Order $order The order object.
+	 */
+	public function mcmchk_display_order_recurring_totals( $order ) {
+		if ( ! class_exists( 'WC_Subscriptions' ) || ! is_a( $order, 'WC_Order' ) ) {
+			return;
+		}
+
+		$subscriptions = function_exists( 'wcs_get_subscriptions_for_order' )
+			? wcs_get_subscriptions_for_order( $order->get_id(), array( 'order_type' => 'any' ) )
+			: array();
+
+		$has_subscription_item = false;
+		if ( empty( $subscriptions ) ) {
+			foreach ( $order->get_items() as $item ) {
+				$product = $item->get_product();
+				if ( $product && class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
+					$has_subscription_item = true;
+					break;
+				}
+			}
+		}
+
+		if ( empty( $subscriptions ) && ! $has_subscription_item ) {
+			return;
+		}
+
+		$settings = get_option( 'mcmchk_settings', array() );
+		$template = isset( $settings['subscription_recurring_template'] ) ? trim( $settings['subscription_recurring_template'] ) : '';
+
+		if ( ! empty( $template ) ) {
+			$vars = $this->mcmchk_get_recurring_order_vars( $order, $subscriptions );
+			$this->mcmchk_render_resolved_subscription_template( $template, $vars );
+		} elseif ( ! empty( $subscriptions ) ) {
+			foreach ( $subscriptions as $subscription ) {
+				?>
+				<div class="mcrpd-totals-row mcrpd-recurring-total-row">
+					<span class="mcrpd-totals-label"><?php esc_html_e( 'Recurring total', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
+					<span class="mcrpd-totals-value"><?php echo wp_kses_post( $subscription->get_formatted_order_total() ); ?></span>
+				</div>
+				<?php
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Build a map of {{variable}} => resolved value from an Order and its WC_Subscription objects.
+	 *
+	 * @param WC_Order $order         The order object.
+	 * @param array    $subscriptions Array of WC_Subscription objects for this order.
+	 * @return array Associative array of variable name => resolved string.
+	 */
+	private function mcmchk_get_recurring_order_vars( $order, $subscriptions = array() ) {
+		$vars = array(
+			'recurring_subtotal' => '',
+			'recurring_total'    => '',
+			'period'             => '',
+			'interval'           => '',
+			'period_name'        => '',
+			'first_renewal_date' => '',
+			'sign_up_fee'        => '',
+			'trial_period'       => '',
+		);
+
+		if ( ! empty( $subscriptions ) ) {
+			foreach ( $subscriptions as $subscription ) {
+				$currency                   = $subscription->get_currency();
+				$vars['recurring_subtotal'] = wp_kses_post( wc_price( $subscription->get_subtotal(), array( 'currency' => $currency ) ) );
+				$vars['recurring_total']    = wp_kses_post( wc_price( $subscription->get_total(), array( 'currency' => $currency ) ) );
+
+				$interval   = max( 1, (int) $subscription->get_billing_interval() );
+				$period_key = $subscription->get_billing_period();
+
+				if ( ! empty( $period_key ) ) {
+					if ( function_exists( 'wcs_get_subscription_period_strings' ) ) {
+						$period_label = wcs_get_subscription_period_strings( $interval, $period_key );
+					} elseif ( class_exists( 'WC_Subscriptions_Product' ) && method_exists( 'WC_Subscriptions_Product', 'get_period_strings' ) ) {
+						$period_strings = WC_Subscriptions_Product::get_period_strings( $interval, $period_key );
+						$period_label   = is_array( $period_strings ) ? ( 1 === $interval ? $period_strings['singular'] : $period_strings['plural'] ) : $period_strings;
+					} else {
+						$period_label = $interval . ' ' . $period_key;
+					}
+
+					$vars['interval']    = esc_html( (string) $interval );
+					$vars['period_name'] = esc_html( sanitize_key( $period_key ) );
+					if ( is_string( $period_label ) && '' !== $period_label ) {
+						$vars['period'] = esc_html( $period_label );
+					} else {
+						/* translators: 1: billing interval number, 2: billing period (month, year, etc.) */
+						$vars['period'] = esc_html( sprintf( _x( '%1$d %2$s', 'billing period', 'mcod-minimalist-checkout-for-woocommerce' ), $interval, $period_key ) );
+					}
+				}
+
+				$next_payment_ts = method_exists( $subscription, 'get_time' ) ? (int) $subscription->get_time( 'next_payment' ) : 0;
+				if ( $next_payment_ts > 0 ) {
+					$vars['first_renewal_date'] = esc_html( date_i18n( wc_date_format(), $next_payment_ts ) );
+				}
+
+				$sign_up_fee         = method_exists( $subscription, 'get_sign_up_fee' ) ? (float) $subscription->get_sign_up_fee() : 0.0;
+				$vars['sign_up_fee'] = wp_kses_post( wc_price( $sign_up_fee, array( 'currency' => $currency ) ) );
+
+				foreach ( $subscription->get_items() as $item ) {
+					$product = $item->get_product();
+					if ( ! $product ) {
+						continue;
+					}
+					$trial_length     = method_exists( $product, 'get_meta' ) ? (int) $product->get_meta( '_subscription_trial_length' ) : (int) get_post_meta( $product->get_id(), '_subscription_trial_length', true );
+					$trial_period_key = sanitize_key( method_exists( $product, 'get_meta' ) ? (string) $product->get_meta( '_subscription_trial_period' ) : (string) get_post_meta( $product->get_id(), '_subscription_trial_period', true ) );
+					if ( $trial_length > 0 && ! empty( $trial_period_key ) ) {
+						/* translators: 1: trial length number, 2: trial period (day, week, month, year) */
+						$vars['trial_period'] = esc_html( sprintf( _x( '%1$d %2$s', 'trial period', 'mcod-minimalist-checkout-for-woocommerce' ), $trial_length, $trial_period_key ) );
+					}
+					break;
+				}
+
+				break;
+			}
+
+			return $vars;
+		}
+
+		// Fallback: resolve from the order's subscription product line item if WC_Subscription object is not yet available
+		foreach ( $order->get_items() as $item ) {
+			$product = $item->get_product();
+			if ( ! $product || ! is_a( $product, 'WC_Product' ) ) {
+				continue;
+			}
+
+			$period_key = method_exists( $product, 'get_meta' ) ? $product->get_meta( '_subscription_period' ) : get_post_meta( $product->get_id(), '_subscription_period', true );
+			if ( empty( $period_key ) ) {
+				continue;
+			}
+
+			$currency                   = $order->get_currency();
+			$vars['recurring_subtotal'] = wp_kses_post( wc_price( $item->get_subtotal(), array( 'currency' => $currency ) ) );
+			$vars['recurring_total']    = wp_kses_post( wc_price( $item->get_total() + $item->get_total_tax(), array( 'currency' => $currency ) ) );
+
+			$interval = method_exists( $product, 'get_meta' ) ? (int) $product->get_meta( '_subscription_period_interval' ) : (int) get_post_meta( $product->get_id(), '_subscription_period_interval', true );
+			$interval = max( 1, $interval );
+
+			if ( function_exists( 'wcs_get_subscription_period_strings' ) ) {
+				$period_label = wcs_get_subscription_period_strings( $interval, $period_key );
+			} else {
+				$period_label = $interval . ' ' . $period_key;
+			}
+
+			$vars['interval']    = esc_html( (string) $interval );
+			$vars['period_name'] = esc_html( sanitize_key( $period_key ) );
+			$vars['period']      = esc_html( (string) $period_label );
+
+			$sign_up_fee         = method_exists( $product, 'get_meta' ) ? (float) $product->get_meta( '_subscription_sign_up_fee' ) : (float) get_post_meta( $product->get_id(), '_subscription_sign_up_fee', true );
+			$vars['sign_up_fee'] = wp_kses_post( wc_price( $sign_up_fee, array( 'currency' => $currency ) ) );
+
+			$trial_length     = method_exists( $product, 'get_meta' ) ? (int) $product->get_meta( '_subscription_trial_length' ) : (int) get_post_meta( $product->get_id(), '_subscription_trial_length', true );
+			$trial_period_key = sanitize_key( method_exists( $product, 'get_meta' ) ? (string) $product->get_meta( '_subscription_trial_period' ) : (string) get_post_meta( $product->get_id(), '_subscription_trial_period', true ) );
+			if ( $trial_length > 0 && ! empty( $trial_period_key ) ) {
+				/* translators: 1: trial length number, 2: trial period (day, week, month, year) */
+				$vars['trial_period'] = esc_html( sprintf( _x( '%1$d %2$s', 'trial period', 'mcod-minimalist-checkout-for-woocommerce' ), $trial_length, $trial_period_key ) );
+			}
+			break;
+		}
+
+		return $vars;
 	}
 
 	/**
@@ -985,6 +1444,372 @@ class MCMCHK_Checkout_Loader {
 	}
 
 	/**
+	 * Handle AJAX updates for the Minimalist Cart (quantity stepper, item removal, and coupon apply/remove).
+	 */
+	public function handle_ajax_update_cart_item() {
+		check_ajax_referer( 'mcmchk-cart-nonce', 'security' );
+
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			wp_send_json_error( array( 'message' => __( 'Cart is not available.', 'mcod-minimalist-checkout-for-woocommerce' ) ) );
+		}
+
+		if ( class_exists( 'WC_Subscriptions' ) ) {
+			$this->mcmchk_setup_subscription_hooks();
+		}
+
+		$sub_action  = isset( $_POST['sub_action'] ) ? sanitize_key( wp_unslash( $_POST['sub_action'] ) ) : 'update_qty';
+		$notice_html = '';
+		$notice_type = 'success';
+
+		if ( 'apply_coupon' === $sub_action ) {
+			$coupon_code = isset( $_POST['coupon_code'] ) ? wc_format_coupon_code( sanitize_text_field( wp_unslash( $_POST['coupon_code'] ) ) ) : '';
+			if ( empty( $coupon_code ) ) {
+				$notice_html = __( 'Please enter a discount code.', 'mcod-minimalist-checkout-for-woocommerce' );
+				$notice_type = 'error';
+			} else {
+				wc_clear_notices();
+				$applied = WC()->cart->apply_coupon( $coupon_code );
+				if ( ! $applied ) {
+					$error_notices = wc_get_notices( 'error' );
+					if ( ! empty( $error_notices ) && isset( $error_notices[0]['notice'] ) ) {
+						$notice_html = wp_strip_all_tags( $error_notices[0]['notice'] );
+					} else {
+						$notice_html = __( 'Invalid discount code.', 'mcod-minimalist-checkout-for-woocommerce' );
+					}
+					$notice_type = 'error';
+				} else {
+					$notice_html = __( 'Coupon applied.', 'mcod-minimalist-checkout-for-woocommerce' );
+					$notice_type = 'success';
+				}
+				wc_clear_notices();
+			}
+		} elseif ( 'remove_coupon' === $sub_action ) {
+			$coupon_code = isset( $_POST['coupon_code'] ) ? wc_format_coupon_code( sanitize_text_field( wp_unslash( $_POST['coupon_code'] ) ) ) : '';
+			if ( ! empty( $coupon_code ) ) {
+				wc_clear_notices();
+				WC()->cart->remove_coupon( $coupon_code );
+				wc_clear_notices();
+			}
+		} else {
+			// Default: update_qty or remove item (qty = 0)
+			$cart_item_key = isset( $_POST['cart_item_key'] ) ? sanitize_text_field( wp_unslash( $_POST['cart_item_key'] ) ) : '';
+			$quantity      = isset( $_POST['quantity'] ) ? (int) $_POST['quantity'] : 0;
+
+			if ( ! empty( $cart_item_key ) && null !== WC()->cart->get_cart_item( $cart_item_key ) ) {
+				if ( $quantity <= 0 ) {
+					WC()->cart->remove_cart_item( $cart_item_key );
+				} else {
+					$cart_item    = WC()->cart->get_cart_item( $cart_item_key );
+					$_product     = isset( $cart_item['data'] ) ? $cart_item['data'] : null;
+					$max_quantity = ( $_product && $_product->get_max_purchase_quantity() > 0 ) ? $_product->get_max_purchase_quantity() : 9999;
+					if ( $quantity > $max_quantity ) {
+						$quantity = $max_quantity;
+					}
+					WC()->cart->set_quantity( $cart_item_key, $quantity, false );
+				}
+			}
+		}
+
+		WC()->cart->calculate_totals();
+
+		if ( WC()->cart->is_empty() ) {
+			wp_send_json_success( array(
+				'is_empty'     => true,
+				'redirect_url' => wc_get_cart_url(),
+			) );
+		}
+
+		wp_send_json_success( array(
+			'is_empty'     => false,
+			'items_html'   => self::render_cart_items_html(),
+			'summary_html' => self::render_cart_summary_html(),
+			'cart_total'   => wp_kses_post( WC()->cart->get_total() ),
+			'item_count'   => (int) WC()->cart->get_cart_contents_count(),
+			'notice_html'  => $notice_html,
+			'notice_type'  => $notice_type,
+		) );
+	}
+
+	/**
+	 * Render the Minimalist Cart items list HTML.
+	 *
+	 * @return string
+	 */
+	public static function render_cart_items_html() {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return '';
+		}
+
+		ob_start();
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			$_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
+			$product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
+
+			if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_cart_item_visible', true, $cart_item, $cart_item_key ) ) {
+				$product_permalink = apply_filters( 'woocommerce_cart_item_permalink', $_product->is_visible() ? $_product->get_permalink( $cart_item ) : '', $cart_item, $cart_item_key );
+				$max_qty           = $_product->get_max_purchase_quantity();
+				?>
+				<div class="mcrpd-cart-item-card <?php echo esc_attr( apply_filters( 'woocommerce_cart_item_class', 'cart_item', $cart_item, $cart_item_key ) ); ?>" data-cart-item-key="<?php echo esc_attr( $cart_item_key ); ?>">
+					<div class="mcrpd-cart-item-image-wrapper">
+						<?php
+						$thumbnail = apply_filters( 'woocommerce_cart_item_thumbnail', $_product->get_image( 'woocommerce_thumbnail' ), $cart_item, $cart_item_key );
+						if ( ! $product_permalink ) {
+							echo wp_kses_post( $thumbnail );
+						} else {
+							printf( '<a href="%s" class="mcrpd-cart-item-thumb-link">%s</a>', esc_url( $product_permalink ), wp_kses_post( $thumbnail ) );
+						}
+						?>
+						<span class="mcrpd-product-qty"><?php echo esc_html( $cart_item['quantity'] ); ?></span>
+					</div>
+
+					<div class="mcrpd-cart-item-details">
+						<div class="mcrpd-cart-item-title">
+							<?php
+							if ( ! $product_permalink ) {
+								echo wp_kses_post( apply_filters( 'woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key ) );
+							} else {
+								echo wp_kses_post( apply_filters( 'woocommerce_cart_item_name', sprintf( '<a href="%s">%s</a>', esc_url( $product_permalink ), $_product->get_name() ), $cart_item, $cart_item_key ) );
+							}
+							?>
+						</div>
+
+						<div class="mcrpd-cart-item-meta">
+							<?php echo wp_kses_post( wc_get_formatted_cart_item_data( $cart_item ) ); ?>
+						</div>
+
+						<?php
+						if ( $_product->backorders_require_notification() && $_product->is_on_backorder( $cart_item['quantity'] ) ) {
+							echo wp_kses_post( apply_filters( 'woocommerce_cart_item_backorder_notification', '<p class="backorder_notification mcrpd-cart-backorder-note">' . esc_html__( 'Available on backorder', 'mcod-minimalist-checkout-for-woocommerce' ) . '</p>', $product_id ) );
+						}
+						?>
+					</div>
+
+					<div class="mcrpd-cart-item-controls">
+						<?php if ( $_product->is_sold_individually() ) : ?>
+							<div class="mcrpd-cart-single-qty-badge">
+								<span>1</span>
+								<input type="hidden" name="cart[<?php echo esc_attr( $cart_item_key ); ?>][qty]" value="1" />
+							</div>
+						<?php else : ?>
+							<div class="mcrpd-qty-stepper">
+								<button type="button" class="mcrpd-qty-btn mcrpd-qty-minus" data-cart-item-key="<?php echo esc_attr( $cart_item_key ); ?>" aria-label="<?php esc_attr_e( 'Decrease quantity', 'mcod-minimalist-checkout-for-woocommerce' ); ?>">&minus;</button>
+								<input
+									type="number"
+									class="mcrpd-qty-input"
+									name="cart[<?php echo esc_attr( $cart_item_key ); ?>][qty]"
+									value="<?php echo esc_attr( $cart_item['quantity'] ); ?>"
+									min="0"
+									<?php if ( $max_qty > 0 ) : ?>
+										max="<?php echo esc_attr( $max_qty ); ?>"
+									<?php endif; ?>
+									step="1"
+									inputmode="numeric"
+									data-cart-item-key="<?php echo esc_attr( $cart_item_key ); ?>"
+									aria-label="<?php esc_attr_e( 'Product quantity', 'mcod-minimalist-checkout-for-woocommerce' ); ?>"
+								/>
+								<button type="button" class="mcrpd-qty-btn mcrpd-qty-plus" data-cart-item-key="<?php echo esc_attr( $cart_item_key ); ?>" aria-label="<?php esc_attr_e( 'Increase quantity', 'mcod-minimalist-checkout-for-woocommerce' ); ?>">&plus;</button>
+							</div>
+						<?php endif; ?>
+
+						<div class="mcrpd-cart-item-subtotal-group">
+							<span class="mcrpd-cart-item-subtotal">
+								<?php echo wp_kses_post( self::get_clean_cart_item_subtotal( $_product, $cart_item, $cart_item_key ) ); ?>
+							</span>
+							<button
+								type="button"
+								class="mcrpd-cart-remove-btn"
+								data-cart-item-key="<?php echo esc_attr( $cart_item_key ); ?>"
+								aria-label="<?php esc_attr_e( 'Remove this item', 'mcod-minimalist-checkout-for-woocommerce' ); ?>"
+								title="<?php esc_attr_e( 'Remove this item', 'mcod-minimalist-checkout-for-woocommerce' ); ?>"
+							>
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
+							</button>
+						</div>
+					</div>
+				</div>
+				<?php
+			}
+		}
+		return ob_get_clean();
+	}
+
+	/**
+	 * Return a clean formatted subtotal for a cart item without WooCommerce Subscriptions'
+	 * verbose recurring/trial/sign-up strings ("durante 1 mes", "Prueba gratuita", "que se deben pagar hoy"),
+	 * since those details are already displayed in the Recurring Payment Block in the right sidebar.
+	 *
+	 * @param WC_Product $product       Product object.
+	 * @param array      $cart_item     Cart item data.
+	 * @param string     $cart_item_key Cart item key.
+	 * @return string Formatted price HTML.
+	 */
+	public static function get_clean_cart_item_subtotal( $product, $cart_item, $cart_item_key ) {
+		if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
+			if ( isset( $cart_item['line_subtotal'] ) ) {
+				$row_price = WC()->cart->display_prices_including_tax()
+					? (float) $cart_item['line_subtotal'] + (float) ( isset( $cart_item['line_subtotal_tax'] ) ? $cart_item['line_subtotal_tax'] : 0 )
+					: (float) $cart_item['line_subtotal'];
+			} else {
+				$row_price = WC()->cart->display_prices_including_tax()
+					? (float) wc_get_price_including_tax( $product, array( 'qty' => $cart_item['quantity'] ) )
+					: (float) wc_get_price_excluding_tax( $product, array( 'qty' => $cart_item['quantity'] ) );
+			}
+			return wc_price( $row_price );
+		}
+
+		return apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $product, $cart_item['quantity'] ), $cart_item, $cart_item_key );
+	}
+
+	/**
+	 * Return a clean formatted line subtotal for an order item on the Thank You page
+	 * without WooCommerce Subscriptions appending recurring billing strings.
+	 *
+	 * @param WC_Order      $order Order object.
+	 * @param WC_Order_Item $item  Order line item.
+	 * @return string Formatted price HTML.
+	 */
+	public static function get_clean_order_item_subtotal( $order, $item ) {
+		$product = is_callable( array( $item, 'get_product' ) ) ? $item->get_product() : false;
+		if ( class_exists( 'WC_Subscriptions' ) && ( ( $product && class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) ) || ( function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order, 'any' ) ) ) ) {
+			$tax_display = get_option( 'woocommerce_tax_display_cart' );
+			$inc_tax     = ( 'incl' === $tax_display );
+			$subtotal    = $order->get_line_subtotal( $item, $inc_tax );
+			return wc_price( $subtotal, array( 'currency' => $order->get_currency() ) );
+		}
+
+		return $order->get_formatted_line_subtotal( $item );
+	}
+
+	/**
+	 * Render the Minimalist Cart right-column summary HTML (coupons, totals, and Proceed to Checkout CTA).
+	 *
+	 * @return string
+	 */
+	public static function render_cart_summary_html() {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return '';
+		}
+
+		$settings            = get_option( 'mcmchk_settings', array() );
+		$disable_coupon      = ! empty( $settings['disable_coupon'] );
+		$enable_digital_mode = ! empty( $settings['enable_digital_mode'] );
+
+		ob_start();
+		?>
+		<h2 class="mcrpd-cart-summary-heading"><?php esc_html_e( 'Order summary', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h2>
+
+		<?php if ( wc_coupons_enabled() && ! $disable_coupon ) : ?>
+			<div class="mcrpd-sidebar-coupon-wrap mcrpd-cart-coupon-wrap">
+				<input type="text" id="mcrpd_cart_coupon_code" class="mcrpd-coupon-input" placeholder="<?php esc_attr_e( 'Discount code', 'mcod-minimalist-checkout-for-woocommerce' ); ?>" aria-label="<?php esc_attr_e( 'Discount code', 'mcod-minimalist-checkout-for-woocommerce' ); ?>" value="" />
+				<button type="button" id="mcrpd_cart_apply_coupon_btn" class="mcrpd-coupon-button"><?php esc_html_e( 'Apply', 'mcod-minimalist-checkout-for-woocommerce' ); ?></button>
+			</div>
+			<div id="mcrpd-cart-coupon-message" class="mcrpd-coupon-message"></div>
+			<hr class="mcrpd-sidebar-divider" />
+		<?php endif; ?>
+
+		<?php do_action( 'mcmchk_before_sidebar_totals' ); ?>
+
+		<div class="mcrpd-sidebar-totals mcrpd-cart-totals-wrapper">
+			<!-- Subtotal -->
+			<div class="mcrpd-totals-row">
+				<span class="mcrpd-totals-label"><?php esc_html_e( 'Subtotal', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
+				<span class="mcrpd-totals-value"><?php wc_cart_totals_subtotal_html(); ?></span>
+			</div>
+
+			<!-- Coupons / Discounts applied -->
+			<?php foreach ( WC()->cart->get_coupons() as $code => $coupon ) : ?>
+				<div class="mcrpd-totals-row mcrpd-coupon-row">
+					<span class="mcrpd-totals-label">
+						<?php esc_html_e( 'Discount', 'mcod-minimalist-checkout-for-woocommerce' ); ?>
+						<span class="mcrpd-coupon-tag">
+							<span class="mcrpd-coupon-tag-icon">🏷️</span>
+							<?php echo esc_html( $code ); ?>
+							<a href="#" class="mcrpd-cart-remove-coupon-btn mcrpd-remove-coupon-btn" data-coupon="<?php echo esc_attr( $code ); ?>" aria-label="<?php esc_attr_e( 'Remove coupon', 'mcod-minimalist-checkout-for-woocommerce' ); ?>">×</a>
+						</span>
+					</span>
+					<span class="mcrpd-totals-value">-<?php wc_cart_totals_coupon_html( $coupon ); ?></span>
+				</div>
+			<?php endforeach; ?>
+
+			<!-- Shipping -->
+			<?php if ( $enable_digital_mode ) : ?>
+				<div class="mcrpd-totals-row">
+					<span class="mcrpd-totals-label"><?php esc_html_e( 'Shipping', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
+					<span class="mcrpd-totals-value"><?php esc_html_e( 'Instant digital', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
+				</div>
+			<?php elseif ( WC()->cart->needs_shipping() ) : ?>
+				<div class="mcrpd-totals-row">
+					<span class="mcrpd-totals-label"><?php esc_html_e( 'Shipping', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
+					<span class="mcrpd-totals-value">
+						<?php
+						if ( WC()->cart->show_shipping() ) {
+							echo wp_kses_post( WC()->cart->get_cart_shipping_total() );
+						} else {
+							esc_html_e( 'Calculated at checkout', 'mcod-minimalist-checkout-for-woocommerce' );
+						}
+						?>
+					</span>
+				</div>
+			<?php endif; ?>
+
+			<!-- Fees -->
+			<?php foreach ( WC()->cart->get_fees() as $fee ) : ?>
+				<div class="mcrpd-totals-row mcrpd-fee-row">
+					<span class="mcrpd-totals-label"><?php echo esc_html( $fee->name ); ?></span>
+					<span class="mcrpd-totals-value"><?php wc_cart_totals_fee_html( $fee ); ?></span>
+				</div>
+			<?php endforeach; ?>
+
+			<!-- Taxes -->
+			<?php if ( wc_tax_enabled() && ! WC()->cart->display_prices_including_tax() ) : ?>
+				<?php if ( 'itemized' === get_option( 'woocommerce_tax_total_display' ) ) : ?>
+					<?php foreach ( WC()->cart->get_tax_totals() as $code => $tax ) : ?>
+						<div class="mcrpd-totals-row">
+							<span class="mcrpd-totals-label"><?php echo esc_html( $tax->label ); ?></span>
+							<span class="mcrpd-totals-value"><?php echo wp_kses_post( $tax->formatted_amount ); ?></span>
+						</div>
+					<?php endforeach; ?>
+				<?php else : ?>
+					<div class="mcrpd-totals-row">
+						<span class="mcrpd-totals-label"><?php echo esc_html( WC()->countries->tax_or_vat() ); ?></span>
+						<span class="mcrpd-totals-value"><?php wc_cart_totals_taxes_total_html(); ?></span>
+					</div>
+				<?php endif; ?>
+			<?php endif; ?>
+
+			<hr class="mcrpd-sidebar-divider" />
+
+			<?php do_action( 'woocommerce_cart_totals_before_order_total' ); ?>
+
+			<!-- Final Order Total -->
+			<div class="mcrpd-totals-row mcrpd-total-row">
+				<span class="mcrpd-total-label"><?php esc_html_e( 'Total', 'mcod-minimalist-checkout-for-woocommerce' ); ?></span>
+				<span class="mcrpd-total-value">
+					<span class="mcrpd-currency-code"><?php echo esc_html( get_woocommerce_currency() ); ?></span>
+					<?php wc_cart_totals_order_total_html(); ?>
+				</span>
+			</div>
+
+			<?php do_action( 'woocommerce_cart_totals_after_order_total' ); ?>
+		</div>
+
+		<div class="wc-proceed-to-checkout mcrpd-cart-cta-wrapper">
+			<?php if ( ! has_action( 'woocommerce_proceed_to_checkout', 'woocommerce_button_proceed_to_checkout' ) ) : ?>
+				<a href="<?php echo esc_url( wc_get_checkout_url() ); ?>" class="checkout-button button alt wc-forward mcrpd-cart-checkout-btn">
+					<?php esc_html_e( 'Proceed to checkout', 'mcod-minimalist-checkout-for-woocommerce' ); ?>
+				</a>
+			<?php endif; ?>
+			<div class="mcrpd-cart-express-actions">
+				<?php do_action( 'woocommerce_proceed_to_checkout' ); ?>
+			</div>
+		</div>
+
+		<?php do_action( 'mcmchk_after_sidebar_totals' ); ?>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
 	 * Render front-end diagnostic tool for Administrators.
 	 *
 	 * @return string
@@ -1048,7 +1873,11 @@ class MCMCHK_Checkout_Loader {
 						<li><strong>Selling Location:</strong> <?php echo esc_html( get_option( 'woocommerce_allowed_countries' ) ); ?></li>
 						<li><strong>Shipping Location:</strong> <?php echo esc_html( get_option( 'woocommerce_ship_to_countries' ) ); ?></li>
 						<li><strong>Default Country:</strong> <?php echo esc_html( get_option( 'woocommerce_default_country' ) ); ?></li>
+						<li><strong>Allowed Countries (Billing):</strong> <?php echo esc_html( implode( ', ', array_keys( WC()->countries->get_allowed_countries() ) ) ); ?></li>
 						<li><strong>Allowed Countries (Shipping):</strong> <?php echo esc_html( implode( ', ', array_keys( WC()->countries->get_shipping_countries() ) ) ); ?></li>
+						<?php if ( isset( WC()->customer ) && is_object( WC()->customer ) ) : ?>
+							<li><strong>Customer Country (Billing / Shipping):</strong> <?php echo esc_html( WC()->customer->get_billing_country() . ' / ' . WC()->customer->get_shipping_country() ); ?></li>
+						<?php endif; ?>
 					</ul>
 				</div>
 				

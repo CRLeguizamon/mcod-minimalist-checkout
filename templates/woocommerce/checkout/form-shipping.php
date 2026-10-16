@@ -19,12 +19,46 @@ if ( ! defined( 'ABSPATH' ) ) {
 $settings                           = get_option( 'mcmchk_settings', array() );
 $enable_digital_mode                = ! empty( $settings['enable_digital_mode'] ) && '1' === $settings['enable_digital_mode'];
 $disable_different_shipping_address = ! empty( $settings['disable_different_shipping_address'] ) || $enable_digital_mode;
+$show_shipping_selector             = ( true === WC()->cart->needs_shipping_address() && ! $disable_different_shipping_address );
 $ship_to_different_checked          = $disable_different_shipping_address ? false : (bool) apply_filters( 'woocommerce_ship_to_different_address_checked', 'shipping' === get_option( 'woocommerce_ship_to_destination' ) ? 1 : 0 );
+
+// Capture Additional/Order Fields output so we don't render an empty .mcrpd-checkout-section wrapper
+$order_fields     = $checkout->get_checkout_fields( 'order' );
+$has_order_fields = ! empty( $order_fields ) && is_array( $order_fields ) && apply_filters( 'woocommerce_enable_order_notes_field', 'yes' === get_option( 'woocommerce_enable_order_comments', 'yes' ) );
+
+ob_start();
+do_action( 'woocommerce_before_order_notes', $checkout );
+
+if ( $has_order_fields ) :
+	if ( ! WC()->cart->needs_shipping() || wc_ship_to_billing_address_only() ) :
+		?>
+		<h3 class="mcrpd-section-title"><?php esc_html_e( 'Additional information', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
+	<?php endif; ?>
+
+	<div class="woocommerce-additional-fields__field-wrapper">
+		<?php
+		uasort( $order_fields, function( $a, $b ) {
+			$a_priority = isset( $a['priority'] ) ? (int) $a['priority'] : 100;
+			$b_priority = isset( $b['priority'] ) ? (int) $b['priority'] : 100;
+			return $a_priority <=> $b_priority;
+		} );
+		foreach ( $order_fields as $key => $field ) {
+			woocommerce_form_field( $key, $field, $checkout->get_value( $key ) );
+		}
+		?>
+	</div>
+	<?php
+endif;
+
+do_action( 'woocommerce_after_order_notes', $checkout );
+$additional_fields_html = trim( ob_get_clean() );
+
+$is_shipping_wrap_empty = ( ! $show_shipping_selector && ! $ship_to_different_checked && '' === $additional_fields_html );
 ?>
-<div class="woocommerce-shipping-fields mcrpd-shipping-fields-wrap">
+<div class="woocommerce-shipping-fields mcrpd-shipping-fields-wrap<?php echo esc_attr( $is_shipping_wrap_empty ? ' mcrpd-shipping-fields-empty' : '' ); ?>"<?php echo $is_shipping_wrap_empty ? ' style="display: none !important;"' : ''; ?>>
 
 	<!-- Choice of shipping address (Only if shipping is required) -->
-	<?php if ( true === WC()->cart->needs_shipping_address() && ! $disable_different_shipping_address ) : ?>
+	<?php if ( $show_shipping_selector ) : ?>
 		<div class="mcrpd-checkout-section mcrpd-shipping-selector-section">
 			<h3 class="mcrpd-section-title"><?php esc_html_e( 'Shipping address', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
 			<div class="mcrpd-shipping-selector-group">
@@ -78,37 +112,12 @@ $ship_to_different_checked          = $disable_different_shipping_address ? fals
 		</div>
 	</div>
 
-	<!-- Additional/Order Fields (Notes, Custom WPDesk fields, etc) -->
-	<div class="woocommerce-additional-fields mcrpd-checkout-section mcrpd-additional-fields-section">
-		<?php do_action( 'woocommerce_before_order_notes', $checkout ); ?>
-
-		<?php
-		$order_fields = $checkout->get_checkout_fields( 'order' );
-		$has_order_fields = ! empty( $order_fields ) && is_array( $order_fields );
-		?>
-
-		<?php if ( $has_order_fields ) : ?>
-			
-			<?php if ( ! WC()->cart->needs_shipping() || wc_ship_to_billing_address_only() ) : ?>
-				<h3 class="mcrpd-section-title"><?php esc_html_e( 'Additional information', 'mcod-minimalist-checkout-for-woocommerce' ); ?></h3>
-			<?php endif; ?>
-
-			<div class="woocommerce-additional-fields__field-wrapper">
-				<?php
-				uasort( $order_fields, function( $a, $b ) {
-					$a_priority = isset( $a['priority'] ) ? (int) $a['priority'] : 100;
-					$b_priority = isset( $b['priority'] ) ? (int) $b['priority'] : 100;
-					return $a_priority <=> $b_priority;
-				} );
-				foreach ( $order_fields as $key => $field ) {
-					woocommerce_form_field( $key, $field, $checkout->get_value( $key ) );
-				}
-				?>
-			</div>
-
-		<?php endif; ?>
-
-		<?php do_action( 'woocommerce_after_order_notes', $checkout ); ?>
-	</div>
+	<?php if ( '' !== $additional_fields_html ) : ?>
+		<!-- Additional/Order Fields (Notes, Custom WPDesk fields, etc) -->
+		<div class="woocommerce-additional-fields mcrpd-checkout-section mcrpd-additional-fields-section">
+			<?php echo $additional_fields_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		</div>
+	<?php endif; ?>
 
 </div>
+

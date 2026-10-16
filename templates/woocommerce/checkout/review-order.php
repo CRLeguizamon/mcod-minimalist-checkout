@@ -55,7 +55,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<?php echo wp_kses_post( wc_get_formatted_cart_item_data( $cart_item ) ); ?>
 					</div>
 					<div class="mcrpd-product-total-price">
-						<?php echo wp_kses_post( apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key ) ); ?>
+						<?php echo wp_kses_post( MCMCHK_Checkout_Loader::get_clean_cart_item_subtotal( $_product, $cart_item, $cart_item_key ) ); ?>
 					</div>
 				</li>
 				<?php

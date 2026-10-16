@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: MCOD Minimalist Checkout for WooCommerce
- * Description: A minimalist and fast checkout for WooCommerce.
- * Version: 1.0.5
+ * Description: Minimalist Checkout, Cart & Thank You page for WooCommerce with a drag-and-drop Checkout Field Editor & Manager.
+ * Version: 2.0
  * Author: crleguizamon
  * Author URI: https://mcodform.com/
  * Requires PHP: 7.4
@@ -11,6 +11,8 @@
  * License: GPLv3
  * Text Domain: mcod-minimalist-checkout-for-woocommerce
  * Domain Path: /languages
+ *
+ * Developer: Cristian Leguizamón <hola@devcristian.com>
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define core constants
-define( 'MCMCHK_VERSION', '1.0.5' );
+define( 'MCMCHK_VERSION', '2.0' );
 define( 'MCMCHK_PLUGIN_FILE', __FILE__ );
 define( 'MCMCHK_DIR', plugin_dir_path( __FILE__ ) );
 define( 'MCMCHK_URL', plugin_dir_url( __FILE__ ) );
@@ -30,12 +32,6 @@ define( 'MCMCHK_ASSETS', MCMCHK_URL . 'assets/' );
  * Initialize the plugin.
  */
 function mcmchk_init() {
-	load_plugin_textdomain(
-		'mcod-minimalist-checkout-for-woocommerce',
-		false,
-		dirname( plugin_basename( __FILE__ ) ) . '/languages'
-	);
-
 	// Check if WooCommerce is active
 	if ( ! class_exists( 'WooCommerce' ) ) {
 		add_action( 'admin_notices', 'mcmchk_missing_wc_notice' );

@@ -42,14 +42,24 @@ if ( ! $is_block_theme ) {
 		<!-- Main Content Wrapper -->
 		<main class="mcrpd-checkout-main-content">
 			<?php
+			$raw_content = '';
 			if ( have_posts() ) {
 				while ( have_posts() ) {
 					the_post();
-					the_content();
+					$raw_content = (string) get_post_field( 'post_content', get_the_ID() );
 				}
+			}
+
+			// Render the WooCommerce shortcode directly to prevent page builders (Elementor, Divi, Gutenberg Blocks)
+			// from wrapping the layout in boxed sections or overriding the checkout/cart with builder widgets.
+			if ( class_exists( 'MCMCHK_Checkout_Loader' ) && MCMCHK_Checkout_Loader::is_minimalist_cart() ) {
+				echo do_shortcode( '[woocommerce_cart]' );
 			} else {
-				// Fallback if no page content, directly execute the WooCommerce checkout shortcode
 				echo do_shortcode( '[woocommerce_checkout]' );
+			}
+
+			if ( ! empty( $raw_content ) && has_shortcode( $raw_content, 'mcmchk_debug' ) ) {
+				echo do_shortcode( '[mcmchk_debug]' );
 			}
 			?>
 		</main>

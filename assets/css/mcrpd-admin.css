@@ -4,24 +4,150 @@
 
 /* Base & Layout Container */
 .toplevel_page_mcrpd-checkout-settings #wpcontent {
-	background-color: #f8faf8;
+	background-color: #f1f5f9;
 }
 
-.toplevel_page_mcrpd-checkout-settings .wrap {
-	max-width: 1100px;
-	margin: 25px auto 40px;
+.toplevel_page_mcrpd-checkout-settings .wrap.mcrpd-settings-wrap {
+	max-width: 1120px;
+	margin: 28px auto 48px;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-	color: #2d3748;
+	color: #1e293b;
 }
 
-.toplevel_page_mcrpd-checkout-settings .wrap h1 {
+/* ==========================================================================
+   0. Modern Admin Hero Header
+   ========================================================================== */
+.mcrpd-admin-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+	background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 22px 26px;
+	margin-bottom: 22px;
+	box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+	flex-wrap: wrap;
+}
+
+.mcrpd-admin-header-left {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.mcrpd-admin-logo-badge {
+	width: 48px;
+	height: 48px;
+	border-radius: 12px;
+	background: linear-gradient(135deg, #2B8D47 0%, #1e6b34 100%);
+	color: #ffffff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 10px rgba(43, 141, 71, 0.25);
+	flex-shrink: 0;
+}
+
+.mcrpd-admin-logo-badge .dashicons {
 	font-size: 24px;
-	font-weight: 700;
-	color: #1a202c;
-	margin-bottom: 24px;
+	width: 24px;
+	height: 24px;
+}
+
+.mcrpd-admin-title-row {
 	display: flex;
 	align-items: center;
 	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.toplevel_page_mcrpd-checkout-settings .mcrpd-admin-title-row h1 {
+	font-size: 21px;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 0;
+	padding: 0;
+	line-height: 1.25;
+}
+
+.mcrpd-version-pill {
+	display: inline-flex;
+	align-items: center;
+	background: #dcfce7;
+	color: #166534;
+	border: 1px solid #bbf7d0;
+	font-size: 11.5px;
+	font-weight: 700;
+	padding: 2px 9px;
+	border-radius: 9999px;
+	letter-spacing: 0.2px;
+}
+
+.mcrpd-admin-subtitle {
+	margin: 4px 0 0 0;
+	font-size: 13.5px;
+	color: #64748b;
+}
+
+.mcrpd-admin-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.mcrpd-header-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 14px;
+	border-radius: 8px;
+	font-size: 13px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: all 0.18s ease;
+	line-height: 1.2;
+}
+
+.mcrpd-header-btn .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+.mcrpd-header-btn-secondary {
+	background: #ffffff;
+	color: #334155;
+	border: 1px solid #cbd5e1;
+}
+
+.mcrpd-header-btn-secondary:hover,
+.mcrpd-header-btn-secondary:focus {
+	background: #f8fafc;
+	color: #0f172a;
+	border-color: #94a3b8;
+	box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+}
+
+.mcrpd-header-btn-star {
+	background: #fffbeb;
+	color: #92400e;
+	border: 1px solid #fcd34d;
+}
+
+.mcrpd-header-btn-star:hover,
+.mcrpd-header-btn-star:focus {
+	background: #fef3c7;
+	color: #78350f;
+	border-color: #f59e0b;
+}
+
+.mcrpd-stars-inline {
+	color: #f59e0b;
+	letter-spacing: 1px;
+	font-size: 12px;
 }
 
 /* ==========================================================================
@@ -30,30 +156,46 @@
 .mcrpd-main-tabs {
 	display: flex;
 	gap: 8px;
-	border-bottom: 2px solid #e2e8f0 !important;
-	margin-bottom: 28px !important;
-	padding-bottom: 0;
+	border-bottom: 1px solid #cbd5e1 !important;
+	margin: 0 0 24px 0 !important;
+	padding: 0 !important;
 	background: transparent;
 }
 
 .mcrpd-main-tabs .nav-tab {
-	background: #ffffff;
-	border: 1px solid #e2e8f0;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background: #e2e8f0;
+	border: 1px solid transparent;
 	border-bottom: none;
-	border-radius: 8px 8px 0 0;
-	padding: 10px 20px;
-	font-size: 14px;
+	border-radius: 10px 10px 0 0;
+	padding: 11px 20px;
+	font-size: 13.5px;
 	font-weight: 600;
-	color: #4a5568;
+	color: #475569;
 	cursor: pointer;
 	outline: none;
 	user-select: none;
 	margin: 0;
-	transition: all 0.2s ease;
+	transition: all 0.18s ease;
+	box-shadow: none;
+}
+
+.mcrpd-main-tabs .nav-tab .dashicons {
+	font-size: 17px;
+	width: 17px;
+	height: 17px;
+	color: #64748b;
+	transition: color 0.18s ease;
 }
 
 .mcrpd-main-tabs .nav-tab:hover {
-	background: #f7fafc;
+	background: #f8fafc;
+	color: #2B8D47;
+}
+
+.mcrpd-main-tabs .nav-tab:hover .dashicons {
 	color: #2B8D47;
 }
 
@@ -61,9 +203,13 @@
 .mcrpd-main-tabs .nav-tab-active:hover {
 	background: #ffffff;
 	color: #2B8D47;
-	border-color: #e2e8f0 #e2e8f0 #ffffff;
+	border-color: #cbd5e1 #cbd5e1 #ffffff;
 	border-top: 3px solid #2B8D47;
-	margin-bottom: -2px;
+	margin-bottom: -1px;
+}
+
+.mcrpd-main-tabs .nav-tab-active .dashicons {
+	color: #2B8D47;
 }
 
 .mcrpd-main-tab-content {
@@ -77,83 +223,124 @@
 /* ==========================================================================
    2. Settings Sections & Form Cards
    ========================================================================== */
+.toplevel_page_mcrpd-checkout-settings #mcrpd-main-tab-design h2 {
+	font-size: 16.5px;
+	font-weight: 700;
+	color: #0f172a;
+	margin: 26px 0 6px 0;
+	letter-spacing: -0.01em;
+}
+
+.toplevel_page_mcrpd-checkout-settings #mcrpd-main-tab-design h2:first-of-type {
+	margin-top: 4px;
+}
+
+.mcrpd-section-intro {
+	margin: 0 0 12px 0 !important;
+	font-size: 13.5px !important;
+	color: #64748b !important;
+}
+
 .toplevel_page_mcrpd-checkout-settings .form-table {
 	background: #ffffff;
 	border: 1px solid #e2e8f0;
-	border-radius: 8px;
-	padding: 16px 24px;
-	margin-bottom: 24px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-	display: block;
+	border-radius: 12px;
+	padding: 6px 24px;
+	margin-top: 0;
+	margin-bottom: 26px;
+	box-shadow: 0 2px 6px rgba(15, 23, 42, 0.025);
+	border-collapse: separate;
+	border-spacing: 0;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.toplevel_page_mcrpd-checkout-settings .form-table tbody tr th,
+.toplevel_page_mcrpd-checkout-settings .form-table tbody tr td {
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.toplevel_page_mcrpd-checkout-settings .form-table tbody tr:last-child th,
+.toplevel_page_mcrpd-checkout-settings .form-table tbody tr:last-child td {
+	border-bottom: none;
 }
 
 .toplevel_page_mcrpd-checkout-settings .form-table th {
-	padding: 18px 20px 18px 0;
-	font-size: 14px;
+	padding: 20px 24px 20px 4px;
+	font-size: 13.5px;
 	font-weight: 600;
-	color: #2d3748;
-	width: 260px;
+	color: #1e293b;
+	width: 270px;
+	vertical-align: top;
+	line-height: 1.45;
 }
 
 .toplevel_page_mcrpd-checkout-settings .form-table td {
-	padding: 18px 0;
-}
-
-.toplevel_page_mcrpd-checkout-settings h2 {
-	font-size: 17px;
-	font-weight: 600;
-	color: #1a202c;
-	margin: 28px 0 14px 0;
+	padding: 18px 4px;
+	vertical-align: top;
 }
 
 .toplevel_page_mcrpd-checkout-settings p.description {
 	font-size: 13px;
-	color: #718096;
+	color: #64748b;
 	margin-top: 6px;
 }
 
-/* Checkbox Inline Styling */
+/* Switch Toggle Label Styling in General Settings */
 .toplevel_page_mcrpd-checkout-settings .mcrpd-checkbox-field-label {
 	display: inline-flex;
-	align-items: center;
-	gap: 10px;
+	align-items: flex-start;
+	gap: 12px;
 	cursor: pointer;
 	user-select: none;
 }
 
-.toplevel_page_mcrpd-checkout-settings .mcrpd-checkbox-field-label input[type="checkbox"] {
-	margin: 0 !important;
-	width: 18px;
-	height: 18px;
-	accent-color: #2B8D47;
-	cursor: pointer;
+.toplevel_page_mcrpd-checkout-settings .mcrpd-settings-toggle {
+	flex-shrink: 0;
+	margin-top: 1px;
 }
 
 .toplevel_page_mcrpd-checkout-settings .mcrpd-checkbox-field-label .description {
 	margin: 0 !important;
-	font-size: 13px;
-	color: #4a5568;
-	line-height: 1.4;
+	font-size: 13.5px;
+	color: #475569;
+	line-height: 1.5;
 }
 
 /* Inputs & Form Controls Styling */
 .toplevel_page_mcrpd-checkout-settings input[type="text"].regular-text,
+.toplevel_page_mcrpd-checkout-settings input[type="url"].regular-text,
 .toplevel_page_mcrpd-checkout-settings input[type="number"] {
-	border: 1px solid #cbd5e0;
-	border-radius: 6px;
+	border: 1px solid #cbd5e1;
+	border-radius: 8px;
 	padding: 8px 12px;
-	font-size: 14px;
-	color: #2d3748;
+	font-size: 13.5px;
+	color: #1e293b;
 	background: #ffffff;
 	transition: border-color 0.2s ease, box-shadow 0.2s ease;
 	box-shadow: none;
+	max-width: 440px;
+	width: 100%;
 }
 
 .toplevel_page_mcrpd-checkout-settings input[type="text"]:focus,
-.toplevel_page_mcrpd-checkout-settings input[type="number"]:focus {
+.toplevel_page_mcrpd-checkout-settings input[type="url"]:focus,
+.toplevel_page_mcrpd-checkout-settings input[type="number"]:focus,
+.toplevel_page_mcrpd-checkout-settings textarea.mcrpd-code-textarea:focus {
 	border-color: #2B8D47;
-	box-shadow: 0 0 0 2px rgba(43, 141, 71, 0.2);
+	box-shadow: 0 0 0 3px rgba(43, 141, 71, 0.16);
 	outline: none;
+}
+
+.toplevel_page_mcrpd-checkout-settings textarea.mcrpd-code-textarea {
+	border: 1px solid #cbd5e1;
+	border-radius: 8px;
+	padding: 12px;
+	font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+	font-size: 12.5px;
+	line-height: 1.55;
+	color: #1e293b;
+	background: #f8fafc;
 }
 
 /* Buttons */
@@ -162,13 +349,13 @@
 	background: #2B8D47 !important;
 	border-color: #24773c !important;
 	color: #ffffff !important;
-	border-radius: 6px !important;
-	padding: 6px 20px !important;
+	border-radius: 8px !important;
+	padding: 9px 24px !important;
 	font-size: 14px !important;
 	font-weight: 600 !important;
 	height: auto !important;
-	transition: background-color 0.2s ease, border-color 0.2s ease !important;
-	box-shadow: 0 2px 4px rgba(43, 141, 71, 0.2) !important;
+	transition: all 0.2s ease !important;
+	box-shadow: 0 2px 6px rgba(43, 141, 71, 0.25) !important;
 	text-shadow: none !important;
 }
 
@@ -176,19 +363,32 @@
 .toplevel_page_mcrpd-checkout-settings input[type="submit"]:hover {
 	background: #24773c !important;
 	border-color: #1e6332 !important;
+	transform: translateY(-1px);
 }
 
 .toplevel_page_mcrpd-checkout-settings .mcrpd-media-upload {
-	border-radius: 6px !important;
-	border-color: #cbd5e0 !important;
-	background: #f7fafc !important;
-	color: #4a5568 !important;
-	font-weight: 500 !important;
+	display: inline-flex !important;
+	align-items: center;
+	gap: 6px;
+	border-radius: 8px !important;
+	border-color: #cbd5e1 !important;
+	background: #f8fafc !important;
+	color: #334155 !important;
+	font-weight: 600 !important;
+	padding: 6px 14px !important;
+	height: auto !important;
+}
+
+.toplevel_page_mcrpd-checkout-settings .mcrpd-media-upload .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
 }
 
 .toplevel_page_mcrpd-checkout-settings .mcrpd-media-upload:hover {
-	background: #edf2f7 !important;
-	color: #2d3748 !important;
+	background: #f1f5f9 !important;
+	color: #0f172a !important;
+	border-color: #94a3b8 !important;
 }
 
 /* ==========================================================================
@@ -198,19 +398,29 @@
 	margin-top: 10px;
 	background: #ffffff;
 	border: 1px solid #e2e8f0;
-	border-radius: 8px;
+	border-radius: 12px;
 	overflow: hidden;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+	box-shadow: 0 2px 6px rgba(15, 23, 42, 0.025);
+}
+
+.mcrpd-field-editor-header {
+	padding: 18px 22px;
+	background: #f8fafc;
+	border-bottom: 1px solid #e2e8f0;
 }
 
 .mcrpd-field-editor-wrap h2 {
-	margin: 0;
-	padding: 16px 20px;
-	background: #f8faf8;
-	border-bottom: 1px solid #e2e8f0;
-	font-size: 15px;
-	font-weight: 600;
-	color: #1a202c;
+	margin: 0 !important;
+	padding: 0;
+	font-size: 16px !important;
+	font-weight: 700 !important;
+	color: #0f172a !important;
+}
+
+.mcrpd-field-editor-subtitle {
+	margin: 4px 0 0 0;
+	font-size: 13px;
+	color: #64748b;
 }
 
 .mcrpd-field-tabs {
@@ -682,4 +892,183 @@
 .mcrpd-setting-box-yellow .mcrpd-checkbox-field-label .description {
 	color: #78350f;
 	line-height: 1.5;
+}
+
+/* ==========================================================================
+   7. Collapsible Subfields (Thank You Button Customizer) & Media Preview
+   ========================================================================== */
+.mcrpd-collapsible-subfields {
+	margin-top: 14px;
+	padding: 18px 20px;
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-left: 3px solid #2B8D47;
+	border-radius: 8px;
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 16px;
+	max-width: 560px;
+}
+
+.mcrpd-subfield-item {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.mcrpd-subfield-label {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1e293b;
+}
+
+.mcrpd-subfield-hint {
+	font-size: 12px;
+	color: #64748b;
+}
+
+.mcrpd-media-field-group {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.mcrpd-logo-preview-wrap {
+	margin-top: 12px;
+	padding: 12px 16px;
+	background: #f8fafc;
+	border: 1px dashed #cbd5e1;
+	border-radius: 8px;
+	display: inline-block;
+}
+
+.mcrpd-logo-preview-img {
+	max-height: 48px;
+	max-width: 180px;
+	height: auto;
+	display: block;
+}
+
+/* ==========================================================================
+   8. Submit Bar & WordPress.org Review Banner
+   ========================================================================== */
+.mcrpd-submit-bar {
+	margin-top: 24px;
+	padding: 16px 24px;
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	box-shadow: 0 2px 6px rgba(15, 23, 42, 0.025);
+}
+
+.mcrpd-review-banner {
+	margin-top: 28px;
+	background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+	border: 1px solid #fde68a;
+	border-radius: 12px;
+	padding: 22px 26px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 20px;
+	box-shadow: 0 2px 8px rgba(245, 158, 11, 0.06);
+	flex-wrap: wrap;
+}
+
+.mcrpd-review-banner-icon {
+	width: 46px;
+	height: 46px;
+	border-radius: 12px;
+	background: #f59e0b;
+	color: #ffffff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
+}
+
+.mcrpd-review-banner-icon .dashicons {
+	font-size: 24px;
+	width: 24px;
+	height: 24px;
+}
+
+.mcrpd-review-banner-content {
+	flex: 1;
+	min-width: 260px;
+}
+
+.mcrpd-review-banner-content h3 {
+	margin: 0 0 4px 0;
+	font-size: 15.5px;
+	font-weight: 700;
+	color: #78350f;
+}
+
+.mcrpd-review-banner-content p {
+	margin: 0;
+	font-size: 13.5px;
+	color: #92400e;
+	line-height: 1.5;
+}
+
+.mcrpd-developer-contact {
+	margin-top: 6px !important;
+	font-size: 12.5px !important;
+	color: #92400e;
+	opacity: 0.95;
+}
+
+.mcrpd-developer-contact a {
+	color: #78350f !important;
+	font-weight: 600;
+	text-decoration: underline;
+}
+
+.mcrpd-developer-contact a:hover {
+	color: #b45309 !important;
+}
+
+.mcrpd-review-banner-actions {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	flex-wrap: wrap;
+}
+
+.mcrpd-review-cta-btn {
+	display: inline-flex;
+	align-items: center;
+	background: #d97706;
+	color: #ffffff !important;
+	font-size: 13.5px;
+	font-weight: 600;
+	padding: 10px 18px;
+	border-radius: 8px;
+	text-decoration: none;
+	transition: all 0.18s ease;
+	box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);
+}
+
+.mcrpd-review-cta-btn:hover,
+.mcrpd-review-cta-btn:focus {
+	background: #b45309;
+	color: #ffffff !important;
+	transform: translateY(-1px);
+}
+
+.mcrpd-review-secondary-link {
+	font-size: 13px;
+	font-weight: 600;
+	color: #92400e !important;
+	text-decoration: underline;
+}
+
+.mcrpd-review-secondary-link:hover {
+	color: #78350f !important;
 }

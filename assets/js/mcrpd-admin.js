@@ -167,8 +167,32 @@
 				multiple: false
 			}).on('select', function() {
 				var attachment = custom_uploader.state().get('selection').first().toJSON();
-				button.prev('input').val(attachment.url);
+				var $input = button.prev('input');
+				$input.val(attachment.url).trigger('change');
 			}).open();
+		});
+
+		// Live Logo Thumbnail Preview
+		$(document).on('change input', '.mcrpd-media-url-input', function() {
+			var url = $.trim($(this).val());
+			var $previewWrap = $(this).closest('td').find('.mcrpd-logo-preview-wrap');
+			if (url) {
+				$previewWrap.find('.mcrpd-logo-preview-img').attr('src', url);
+				$previewWrap.slideDown(150);
+			} else {
+				$previewWrap.slideUp(150);
+			}
+		});
+
+		// =====================================================================
+		// 8. Collapsible "Continue shopping" Button Settings (Thank You Page)
+		// =====================================================================
+		$('#mcmchk_custom_thankyou_btn_enabled').on('change', function() {
+			if ($(this).is(':checked')) {
+				$('#mcrpd-thankyou-btn-subfields').slideDown(180);
+			} else {
+				$('#mcrpd-thankyou-btn-subfields').slideUp(180);
+			}
 		});
 
 	});
